@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Upload Event Protype</title>
+    <meta name="description" content="A cool thing made with Glitch">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment-with-locales.min.js"></script>
+
+    <script src="/uuid-lib-copy.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
+    <script src="https://unpkg.com/vue"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <header>
+      <h1>
+        Enter Event Info
+      </h1>
+    </header>
+
+    <main id="app">
+
+      <p class="bold">Enter the info for your event</p>
+
+
+
+        Title: <input type="text" maxlength="100" placeholder="..." v-model="event.title">
+
+        Event Date: <input id="date" type="date">
+        Start Time: <input id="start_time" >
+        End Time: <input id="end_time" >
+
+        Venues: <input type="text" maxlength="100" placeholder="...">
+
+        Event website: <input type="text" maxlength="100" placeholder="...">
+        Organizers: <input type="text" maxlength="100" placeholder="...">
+
+
+        Link to Map: <input type="text" maxlength="100" placeholder="...">
+        Address: <input type="text" maxlength="100" placeholder="...">
+        City: <input type="text" maxlength="100" placeholder="...">
+        Zip: <input type="text" maxlength="100" placeholder="...">
+
+
+        Brief Description: <input type="text" maxlength="100" placeholder="...">
+        Description: <input type="text" maxlength="100" placeholder="...">
+
+        Links (separate by commas): <input type="text" maxlength="100" placeholder="...">
+        Facebook Event Link: <input type="text" maxlength="100" placeholder="...">
+        Eventbright Link: <input type="text" maxlength="100" placeholder="...">
+        Bitly Link: <input type="text" maxlength="100" placeholder="...">
+
+        Tags (separate by commas): <input type="text" maxlength="100" placeholder="...">
+
+        <button type="submit" @click="submitEvent()">Submit</button>
+
+
+
+    </main>
+
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+
+    <script>
+
+      $(document).ready(function() {
+        $('#start_time').timepicker();
+        $('#end_time').timepicker();
+      })
+
+      var app = new Vue({
+        el: '#app',
+        data: {
+          event:{
+            id: "",
+            title: "",
+            slug: "",
+            when: "",
+            time_start: "",
+            time_end: "",
+            website: "",
+            image: "/images/insert-new-manually",
+            social_image: "insert-new-manually",
+            venues: [],
+            organizers: ["insert-new-manually"],
+            map_link: "insert-new-manually",
+            address:"",
+            city:"",
+            state:"",
+            zip:"",
+            brief_description: "insert-new-manually",
+            description: "insert-new-manually",
+            links: [],
+            fb_event_link: "none",
+            eventbright_link: "none",
+            bitly_link: "insert-new-manually",
+            tags: ["insert-new-manually"]
+          }
+        },
+        methods:{
+          submitEvent: function(){
+            console.log("Here's your event")
+            console.log(this.event)
+
+            // $.ajax({
+            //   url:'https://test3.infinite.industries/events',
+            //   type: 'POST',
+            //   dataType: "jsonp",
+            //   // data:{
+            //   //   event: this.event
+            //   // },
+            //   success: function(){
+            //     console.log("yo!")
+            //   }
+            // })
+
+            axios({
+              url:'https://test3.infinite.industries/events',
+              data: {event: this.event},
+              method: 'post'
+            })
+            .then(function (_response) {
+              console.log(_response)
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+          }
+        }
+      })
+
+    </script>
+
+  </body>
+</html>
