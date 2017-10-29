@@ -12,11 +12,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment-with-locales.min.js"></script>
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+
 
     <script src="/uuid-lib-copy.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
-    <script src="https://unpkg.com/vue"></script>
+    
+    <link href="https://cdn.quilljs.com/1.3.3/quill.snow.css" rel="stylesheet">
+    <script src="//cdn.quilljs.com/1.3.3/quill.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
     <link rel="stylesheet" href="/style.css">
@@ -28,115 +33,207 @@
       </h1>
     </header>
 
-    <main id="app">
+    <div class="container-fluid form-description" id="app">
+      <div class="row">
+        <div class="col-sm-8">
+          <div class="form-group">
+            <label for="title">Title: </label>
+            <input type="text" id="title" class="form-control" placeholder="..." v-model="event.title">
+          </div>
+        </div>
+      </div>
 
-      <p class="bold">Enter the info for your event</p>
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="form-group">
+            <label for="event-date">Event Date: </label>
+            <input type="date" id="event-date" class="form-control" placeholder="..." v-model="event.date">
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="form-group">
+            <label for="start-time">Start Time: </label>
+            <input type="time" id="start-time" class="form-control" v-model="event.start_time">
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="form-group">
+            <label for="end-time">End Time: </label>
+            <input type="time" id="end-time" class="form-control" v-model="event.end_time">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-8">
+          <div class="form-group">
+            <label for="event-image">Event Image:</label>
+            <input type="file" id="event-image" name="event_image" v-on:change="RegisterImage()">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-8">
+          <div class="form-group">
+            <label for="event-social-image">Event Optimized Social Media Image:</label>
+           <input type="file" id="event-social-image" name="event_social_image" v-on:change="RegisterSocialImage()">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-8">
+          <div class="form-group">
+            <label for="organizers">Organizer(s):</label>
+             <input id="organizers" name="organizers" type="text" v-model="event.organizers">
+          </div>
+        </div>
+      </div>
+        
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="form-group">
+            <label for="venues">Choose a Venue: </label>
+              <select name="venues" id="venues" v-model="event.venues">
+                <option value="institute_193">Institute 193</option>
+                <option value="the_burl">The Burl</option>
+                <option value="savs_building">School of Art Building</option>
+                <option value="cosmic">Cosmic Charlie's</option>
+                <option value="bfb">Best Friend's Bar</option>
+              </select>
+          </div>
+        </div>
+        <div class="col-sm-8">
+          OR 
+           <button class="submitter" @click.stop="AddVenue()">Add a new venue</button>
+        </div>
+    
+        </div>
+      
+        <div id="add-venue">
+      
+          Venue Name: <input type="text" maxlength="100" placeholder="...">
+          Address: <input type="text" maxlength="100" placeholder="...">
+          City: <input type="text" maxlength="100" placeholder="...">
+          Zip: <input type="text" maxlength="100" placeholder="...">
+          
+          <button class="submitter" @click="SubmitVenue()">
+            Add Venue
+          </button>
+          <button @click="CancelSubmitVenue()">
+            Cancel
+          </button>
+        
+        </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="event-brief-description">Brief Description of Your Event: </label>
+              <textarea id="event-brief-description" class="form-control" placeholder="A brief description for humans and webcrawlers" v-model="event.brief_description"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="ticket-link">Ticket Link: </label>
+              <input type="text" id="ticket-link" class="form-control" v-model="event.ticket_link">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="fb-event-link">Facebook Event Link: </label>
+              <input type="text" id="fb-event-link" class="form-control" v-model="event.fb_event_link">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="eventbright-link">Eventbright Link: </label>
+              <input type="text" id="eventbright-link" class="form-control" v-model="event.eventbright_link">
+            </div>
+          </div>
+        </div>  
+      
+        Full Event Description: 
+        <div id="full-description-container">
+          <div id="toolbar-container">
+            <button class="ql-bold" data-toggle="tooltip" data-placement="bottom" title="Bold"></button>
+            <button class="ql-italic" data-toggle="tooltip" data-placement="bottom" title="Add italic text <cmd+i>"></button>
+          </div>
+          <div id="editor-container"></div>
+        </div>
+    
+        <button class="submitter" type="submit" @click="SubmitEvent()">Submit</button>
+
+      </div>
+     
 
 
 
-        Title: <input type="text" maxlength="100" placeholder="..." v-model="event.title">
-
-        Event Date: <input id="date" type="date">
-        Start Time: <input id="start_time" >
-        End Time: <input id="end_time" >
-
-        Venues: <input type="text" maxlength="100" placeholder="...">
-
-        Event website: <input type="text" maxlength="100" placeholder="...">
-        Organizers: <input type="text" maxlength="100" placeholder="...">
-
-
-        Link to Map: <input type="text" maxlength="100" placeholder="...">
-        Address: <input type="text" maxlength="100" placeholder="...">
-        City: <input type="text" maxlength="100" placeholder="...">
-        Zip: <input type="text" maxlength="100" placeholder="...">
-
-
-        Brief Description: <input type="text" maxlength="100" placeholder="...">
-        Description: <input type="text" maxlength="100" placeholder="...">
-
-        Links (separate by commas): <input type="text" maxlength="100" placeholder="...">
-        Facebook Event Link: <input type="text" maxlength="100" placeholder="...">
-        Eventbright Link: <input type="text" maxlength="100" placeholder="...">
-        Bitly Link: <input type="text" maxlength="100" placeholder="...">
-
-        Tags (separate by commas): <input type="text" maxlength="100" placeholder="...">
-
-        <button type="submit" @click="submitEvent()">Submit</button>
-
-
-
-    </main>
-
-    <script src="https://unpkg.com/vue/dist/vue.js"></script>
-
+    <script src="https://unpkg.com/vue"></script>
     <script>
 
       $(document).ready(function() {
-        $('#start_time').timepicker();
-        $('#end_time').timepicker();
+        $('#start-time').timepicker();
+        $('#end-time').timepicker();
+        
+        var quill = new Quill('#editor-container', {
+          modules: {
+            toolbar: '#toolbar-container'
+          },
+          placeholder: 'Compose an epic...',
+          theme: 'snow'
+        });
+        
       })
-
+      
+      // ugliness to follow don't judge
+      
       var app = new Vue({
         el: '#app',
         data: {
           event:{
-            id: "",
-            title: "",
-            slug: "",
-            when: "",
-            time_start: "",
-            time_end: "",
-            website: "",
-            image: "/images/insert-new-manually",
-            social_image: "insert-new-manually",
-            venues: [],
-            organizers: ["insert-new-manually"],
-            map_link: "insert-new-manually",
-            address:"",
-            city:"",
-            state:"",
-            zip:"",
-            brief_description: "insert-new-manually",
-            description: "insert-new-manually",
-            links: [],
-            fb_event_link: "none",
-            eventbright_link: "none",
-            bitly_link: "insert-new-manually",
-            tags: ["insert-new-manually"]
+            title: "...",
+            date:"",
+            start_time:"",
+            end_time:"",
+            image:"",
+            social_image:"",
+            brief_description:"",
+            description:"",
+            eventbright_link:"",
+            fb_event_link:"",
+            ticket_link:""
           }
         },
-        methods:{
-          submitEvent: function(){
-            console.log("Here's your event")
-            console.log(this.event)
-
-            // $.ajax({
-            //   url:'https://test3.infinite.industries/events',
-            //   type: 'POST',
-            //   dataType: "jsonp",
-            //   // data:{
-            //   //   event: this.event
-            //   // },
-            //   success: function(){
-            //     console.log("yo!")
-            //   }
-            // })
-
-            // axios({
-            //   url:'https://test3.infinite.industries/events',
-            //   data: {event: this.event},
-            //   method: 'post'
-            // })
-            // .then(function (_response) {
-            //   console.log(_response)
-            // })
-            // .catch(function (error) {
-            //   console.log(error);
-            // });
+        mounted: function(){
+          $('#add-venue').hide()
+        },
+        methods: {
+          AddVenue: function(){
+            $('#add-venue').show('slow')
+          },
+          SubmitVenue: function(){
+            
+          },
+          CancelSubmitVenue: function(){
+            $('#add-venue').hide('slow')
+          },
+          SubmitEvent: function(){
+            
+          },
+          RegisterImage:function(){
+            
+          },
+          RegisterSocialImage:function(){
+            
           }
         }
       })
+      
+
 
     </script>
 
