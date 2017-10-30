@@ -1,239 +1,261 @@
 
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Upload Event Protype</title>
-    <meta name="description" content="A cool thing made with Glitch">
-    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+  <title>Upload Event Protype</title>
+  <meta name="description" content="A cool thing made with Glitch">
+  <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment-with-locales.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment-with-locales.min.js"></script>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
 
 
-    <script src="/uuid-lib-copy.js"></script>
+  <script src="/uuid-lib-copy.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
 
-    <link href="https://cdn.quilljs.com/1.3.3/quill.snow.css" rel="stylesheet">
-    <script src="//cdn.quilljs.com/1.3.3/quill.js"></script>
+  <link href="https://cdn.quilljs.com/1.3.3/quill.snow.css" rel="stylesheet">
+  <script src="//cdn.quilljs.com/1.3.3/quill.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
-    <link rel="stylesheet" href="/style.css">
-  </head>
-  <body>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
 
-    <div class="container-fluid form-description" id="app">
-      <h1>
-        Enter Event Info
-      </h1>
+  <div class="container-fluid form-description" id="app">
+    <h1>
+      Enter Event Info
+    </h1>
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="form-group">
+          <label for="title">Title: </label>
+          <input type="text" id="title" class="form-control" placeholder="..." v-model="event.title">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-3">
+        <div class="form-group">
+          <label for="event-date">Event Date: </label>
+          <input type="date" id="event-date" class="form-control" placeholder="..." v-model="event.date">
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="form-group">
+          <label for="start-time">Start Time: </label>
+          <input type="time" id="start-time" class="form-control" v-model="event.start_time">
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="form-group">
+          <label for="end-time">End Time: </label>
+          <input type="time" id="end-time" class="form-control" v-model="event.end_time">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="form-group">
+          <label for="event-image">Event Image:</label>
+          <input type="file" class="form-control" id="event-image" name="event_image">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="form-group">
+          <label for="event-social-image">Event Optimized Social Media Image:</label>
+         <input type="file" id="event-social-image" class="form-control" name="event_social_image" v-on:change="RegisterSocialImage()">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="form-group">
+          <label for="organizers">Organizer(s):</label>
+           <input id="organizers" name="organizers" type="text" class="form-control" v-model="event.organizers">
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-bottom:20px;margin-top:20px;">
+      <div class="col-sm-4">
+        <div class="form-group">
+          <label for="venues">Choose a Venue: </label>
+            <select name="venues" class="form-control" id="venues" v-model="venues">
+              <option v-for="venue in venues">{{venue.name}}</option>
+            </select>
+        </div>
+      </div>
+      <div class="col-sm-8">
+        OR
+         <button class="submitter" @click.stop="AddVenue()">Add a new venue</button>
+      </div>
+
+      </div>
+
+      <div id="add-venue">
+
+        Venue Name: <input type="text" maxlength="100" placeholder="...">
+        Address: <input type="text" maxlength="100" placeholder="...">
+        City: <input type="text" maxlength="100" placeholder="...">
+        Zip: <input type="text" maxlength="100" placeholder="...">
+
+        <button class="submitter" @click="SubmitVenue()">
+          Add Venue
+        </button>
+        <button @click="CancelSubmitVenue()">
+          Cancel
+        </button>
+
+      </div>
       <div class="row">
         <div class="col-sm-8">
           <div class="form-group">
-            <label for="title">Title: </label>
-            <input type="text" id="title" class="form-control" placeholder="..." v-model="event.title">
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-3">
-          <div class="form-group">
-            <label for="event-date">Event Date: </label>
-            <input type="date" id="event-date" class="form-control" placeholder="..." v-model="event.date">
-          </div>
-        </div>
-        <div class="col-sm-2">
-          <div class="form-group">
-            <label for="start-time">Start Time: </label>
-            <input type="time" id="start-time" class="form-control" v-model="event.start_time">
-          </div>
-        </div>
-        <div class="col-sm-2">
-          <div class="form-group">
-            <label for="end-time">End Time: </label>
-            <input type="time" id="end-time" class="form-control" v-model="event.end_time">
+            <label for="event-brief-description">Brief Description of Your Event: </label>
+            <textarea id="event-brief-description" class="form-control" placeholder="A brief description for short-attention-span humans and webcrawlers" v-model="event.brief_description"></textarea>
           </div>
         </div>
       </div>
       <div class="row">
         <div class="col-sm-8">
           <div class="form-group">
-            <label for="event-image">Event Image:</label>
-            <input type="file" class="form-control" id="event-image" name="event_image" v-on:change="RegisterImage()">
+            <label for="ticket-link">Ticket Link: </label>
+            <input type="text" id="ticket-link" class="form-control" v-model="event.ticket_link">
           </div>
         </div>
       </div>
       <div class="row">
         <div class="col-sm-8">
           <div class="form-group">
-            <label for="event-social-image">Event Optimized Social Media Image:</label>
-           <input type="file" id="event-social-image" class="form-control" name="event_social_image" v-on:change="RegisterSocialImage()">
+            <label for="fb-event-link">Facebook Event Link: </label>
+            <input type="text" id="fb-event-link" class="form-control" v-model="event.fb_event_link">
           </div>
         </div>
       </div>
       <div class="row">
         <div class="col-sm-8">
           <div class="form-group">
-            <label for="organizers">Organizer(s):</label>
-             <input id="organizers" name="organizers" type="text" class="form-control" v-model="event.organizers">
+            <label for="eventbright-link">Eventbright Link: </label>
+            <input type="text" id="eventbright-link" class="form-control" v-model="event.eventbright_link">
           </div>
         </div>
       </div>
 
-      <div class="row" style="margin-bottom:20px;margin-top:20px;">
-        <div class="col-sm-4">
-          <div class="form-group">
-            <label for="venues">Choose a Venue: </label>
-              <select name="venues" class="form-control" id="venues" v-model="event.venues">
-                <option value="institute_193">Institute 193</option>
-                <option value="the_burl">The Burl</option>
-                <option value="savs_building">School of Art Building</option>
-                <option value="cosmic">Cosmic Charlie's</option>
-                <option value="bfb">Best Friend's Bar</option>
-              </select>
-          </div>
-        </div>
-        <div class="col-sm-8">
-          OR
-           <button class="submitter" @click.stop="AddVenue()">Add a new venue</button>
+        <p>Full Event Description:</p>
+        <div id="full-description-container" style="width:66%">
+          <div id="editor-container"></div>
         </div>
 
-        </div>
 
-        <div id="add-venue">
+      <button class="submitter main-submit-button" type="submit" @click="SubmitEvent()">Submit</button>
 
-          Venue Name: <input type="text" maxlength="100" placeholder="...">
-          Address: <input type="text" maxlength="100" placeholder="...">
-          City: <input type="text" maxlength="100" placeholder="...">
-          Zip: <input type="text" maxlength="100" placeholder="...">
-
-          <button class="submitter" @click="SubmitVenue()">
-            Add Venue
-          </button>
-          <button @click="CancelSubmitVenue()">
-            Cancel
-          </button>
-
-        </div>
-        <div class="row">
-          <div class="col-sm-8">
-            <div class="form-group">
-              <label for="event-brief-description">Brief Description of Your Event: </label>
-              <textarea id="event-brief-description" class="form-control" placeholder="A brief description for short-attention-span humans and webcrawlers" v-model="event.brief_description"></textarea>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-8">
-            <div class="form-group">
-              <label for="ticket-link">Ticket Link: </label>
-              <input type="text" id="ticket-link" class="form-control" v-model="event.ticket_link">
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-8">
-            <div class="form-group">
-              <label for="fb-event-link">Facebook Event Link: </label>
-              <input type="text" id="fb-event-link" class="form-control" v-model="event.fb_event_link">
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-8">
-            <div class="form-group">
-              <label for="eventbright-link">Eventbright Link: </label>
-              <input type="text" id="eventbright-link" class="form-control" v-model="event.eventbright_link">
-            </div>
-          </div>
-        </div>
-
-          <p>Full Event Description:</p>
-          <div id="full-description-container" style="width:66%">
-            <div id="editor-container"></div>
-          </div>
-
-
-        <button class="submitter main-submit-button" type="submit" @click="SubmitEvent()">Submit</button>
-
-      </div>
+    </div>
 
 
 
 
-    <script src="https://unpkg.com/vue"></script>
-    <script>
+  <script src="https://unpkg.com/vue"></script>
+  <script>
 
-      $(document).ready(function() {
-        $('#start-time').timepicker();
-        $('#end-time').timepicker();
+    $(document).ready(function() {
+      $('#start-time').timepicker();
+      $('#end-time').timepicker();
 
-        var quill = new Quill('#editor-container', {
-          modules: {
-            toolbar: [
-              ['bold', 'italic'],
-              ['link']
-            ]
-          },
-          placeholder: 'Compose an epic...',
-          theme: 'snow'
-        });
-
-      })
-
-      // ugliness to follow don't judge
-
-      var app = new Vue({
-        el: '#app',
-        data: {
-          event:{
-            title: "...",
-            date:"",
-            start_time:"",
-            end_time:"",
-            image:"",
-            social_image:"",
-            brief_description:"",
-            description:"",
-            eventbright_link:"",
-            fb_event_link:"",
-            ticket_link:""
-          }
+      var quill = new Quill('#editor-container', {
+        modules: {
+          toolbar: [
+            ['bold', 'italic'],
+            ['link']
+          ]
         },
-        mounted: function(){
-          $('#add-venue').hide()
+        placeholder: 'Compose an epic...',
+        theme: 'snow'
+      });
+
+    })
+
+    // ugliness to follow don't judge
+
+    var app = new Vue({
+      el: '#app',
+      data: {
+        event:{
+          title: "...",
+          date:"",
+          start_time:"",
+          end_time:"",
+          image:"",
+          social_image:"",
+          brief_description:"",
+          description:"",
+          eventbright_link:"",
+          fb_event_link:"",
+          ticket_link:""
         },
-        methods: {
-          AddVenue: function(){
-            $('#add-venue').show('slow')
-          },
-          SubmitVenue: function(){
+        venues: []
+      },
+      mounted: function(){
+        $('#add-venue').hide();
+        var _self = this;
 
-          },
-          CancelSubmitVenue: function(){
-            $('#add-venue').hide('slow')
-          },
-          SubmitEvent: function(){
+        axios.get('/venues')
+          .then(function (response) {
+            _self.venues = response.data.venue_list;
+            console.log(_self.venues);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      },
+      methods: {
+        AddVenue: function(){
+          $('#add-venue').show('slow')
+        },
+        SubmitVenue: function(){
 
-          },
-          RegisterImage:function(){
+        },
+        CancelSubmitVenue: function(){
+          $('#add-venue').hide('slow')
+        },
+        SubmitEvent: function(){
+          console.log(this.event.title);
 
-          },
-          RegisterSocialImage:function(){
+          var formData = new FormData();
+          formData.append('title', this.event.title);
+          formData.append('image', document.getElementById('event-image').files[0]);
 
-          }
+          axios.post('/event', formData)
+            .then(function (response) {
+              console.log(response.data);
+
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+
+
+        },
+        RegisterImage:function(){
+
+        },
+        RegisterSocialImage:function(){
+
         }
-      })
+      }
+    })
 
 
 
-    </script>
+  </script>
 
-  </body>
+</body>
 </html>

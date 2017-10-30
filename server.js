@@ -4,8 +4,16 @@
 // init project
 var aws = require('aws-sdk');
 var mongodb = require('mongodb');
-var multer = require('multer');
+// var multer = require('multer');
+var multiparty = require('multiparty');
 var express = require('express');
+var util = require('util');
+var dotenv = require('dotenv');
+var fs = require('fs');
+var uuidv4 = require('uuid/v4');
+var path = require('path');
+
+dotenv.load(); //get configuration file from .env
 
 var app = express();
 
@@ -23,23 +31,21 @@ var s3 = new aws.S3({
 //   })
 // })
 
-var uploadFile = function(file_name, file_data) {
+
+var uploadFile = function(file_name, file_data, cb) {
   var params = {
     Body: file_data,
     Bucket: process.env.AWS_S3_UPLOADS_BUCKET,
     Key: "uploads/"+file_name
   };
 
-  s3.putObject(params, function(err, data) {
-   if (err) console.log(err, err.stack);
-   else     console.log(data);
-  });
+  s3.putObject(params, cb);
 }
 
 //var axios = require('axios');
-var bodyParser = require('body-parser') //required for post requests
-
-app.use(bodyParser.json());
+// var bodyParser = require('body-parser') //required for post requests
+//
+// app.use(bodyParser.json());
 
 app.use(express.static('public'));
 
@@ -70,47 +76,60 @@ app.post("/inhale-event-external", function (request, response) {
 });
 
 // Create new Event
-app.post("/events", function (request, response) {
-  console.log('POST /events', request.body);
+app.post("/event", function (request, response) {
 
+  var form = new multiparty.Form();
 
-  uploadFile('', '')
-  uploadFile()
+  form.parse(request, function(err, fields, files) {
+    console.log(util.inspect({fields: fields, files: files.image[0]}));
 
+    fs.readFile(files.image[0].path, function (err,data) {
+      if (err) {
+        return console.log(err);
+      }
+      var base64file = new Buffer(data,'binary');
+      var file_name = uuidv4() + path.extname(files.image[0].originalFilename);
 
-  //var image_upload = upload.array('image');
-  //var social_image_upload = upload.array('social_image');
-
-  var event_data = {
-
-  }
-
-  mongodb.MongoClient.connect(process.env.MONGO_DB_CONNECTION, function(err, db) {
-    if(err) throw err;
-
-    var events = db.collection('events');
-
-    events.insert(event_data, function(err, result) {
-      if(err) throw err;
-
-      console.log('Event inserted');
+      uploadFile(file_name, base64file, function(err, data){
+        if(err) {
+          response.status(500).json({"status":"failure"});
+        }
+        else{
+          // console.log(util.inspect(data));
+          response.status(200).json({"status":"success"});
+        }
+      });
     });
+
   });
+
+  // console.log('POST /event', request.body);
 })
 
 app.get("/venues", function(request, response){
-   mongodb.MongoClient.connect(process.env.MONGO_DB_CONNECTION, function(err, db) {
-    if(err) throw err;
-
-    var venues = db.collection('venues');
-    venues.find({}).toArray(function(err, docs){
-      response.json(docs);
-    })
-
-  });
+  //  mongodb.MongoClient.connect(process.env.MONGO_DB_CONNECTION, function(err, db) {
+  //   if(err) throw err;
+  //
+  //   var venues = db.collection('venues');
+  //   venues.find({}).toArray(function(err, docs){
+  //     response.json(docs);
+  //   })
+  //
+  // });
+  response.json({"status":"success",
+    "venue_list": [
+      {"name":"Institute 193"},
+      {"name":"The Burl"},
+      {"name":"School of Art Building"},
+      {"name":"Cosmic Charlie's"},
+      {"name":"Best Friend's Bar"}
+    ]
+  })
 })
 
+
+
 // listen for requests :)
-var listener = app.listen(4000, function () {
+var listener = app.listen(/*process.env.PORT ||*/ 4000, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
