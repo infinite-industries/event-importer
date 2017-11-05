@@ -51,13 +51,13 @@
       <div class="col-sm-2">
         <div class="form-group">
           <label for="start-time">Start Time: </label>
-          <input type="time" id="start-time" class="form-control" v-model="event.start_time">
+          <input id="start-time" class="form-control">
         </div>
       </div>
       <div class="col-sm-2">
         <div class="form-group">
           <label for="end-time">End Time: </label>
-          <input type="time" id="end-time" class="form-control" v-model="event.end_time">
+          <input id="end-time" class="form-control">
         </div>
       </div>
     </div>
@@ -80,7 +80,7 @@
     <div class="row">
       <div class="col-sm-8">
         <div class="form-group">
-          <label for="organizers">Organizer(s):</label>
+          <label for="organizers">Organizer(s) - Please use commas to separate:</label>
            <input id="organizers" name="organizers" type="text" class="form-control" v-model="event.organizers">
         </div>
       </div>
@@ -90,8 +90,8 @@
       <div class="col-sm-4">
         <div class="form-group">
           <label for="venues">Choose a Venue: </label>
-            <select name="venues" class="form-control" id="venues" v-model="venues">
-              <option v-for="venue in venues">{{venue.name}}</option>
+            <select name="venues" class="form-control" id="venues" v-model="selected_venue">
+              <option v-for="venue in venues" v-bind:value="venue">{{venue.name}}</option>
             </select>
         </div>
       </div>
@@ -125,59 +125,76 @@
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col-sm-8">
-          <div class="form-group">
-            <label for="ticket-link">Ticket Link: </label>
-            <input type="text" id="ticket-link" class="form-control" v-model="event.ticket_link">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-8">
-          <div class="form-group">
-            <label for="fb-event-link">Facebook Event Link: </label>
-            <input type="text" id="fb-event-link" class="form-control" v-model="event.fb_event_link">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-8">
-          <div class="form-group">
-            <label for="eventbright-link">Eventbright Link: </label>
-            <input type="text" id="eventbright-link" class="form-control" v-model="event.eventbright_link">
-          </div>
-        </div>
-      </div>
-
         <p>Full Event Description:</p>
         <div id="full-description-container" style="width:66%">
           <div id="editor-container"></div>
         </div>
 
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="contact-email">Contact Email: </label>
+              <input type="text" id="contact-email" class="form-control" v-model="event.contact_email">
+            </div>
+          </div>
+        </div>
+
+        <h4>Optional:</h4>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="website-link">Event Website Link: </label>
+              <input type="text" id="website-link" class="form-control" v-model="event.website_link">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="ticket-link">Ticket Link: </label>
+              <input type="text" id="ticket-link" class="form-control" v-model="event.ticket_link">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="fb-event-link">Facebook Event Link: </label>
+              <input type="text" id="fb-event-link" class="form-control" v-model="event.fb_event_link">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="eventbright-link">Eventbright Link: </label>
+              <input type="text" id="eventbright-link" class="form-control" v-model="event.eventbright_link">
+            </div>
+          </div>
+        </div>
 
       <button class="submitter main-submit-button" type="submit" @click="SubmitEvent()">Submit</button>
 
     </div>
 
-
-
-
   <script src="https://unpkg.com/vue"></script>
   <script>
 
-    $(document).ready(function() {
-      $('#start-time').timepicker();
-      $('#end-time').timepicker();
+    var quill = {};
 
-      var quill = new Quill('#editor-container', {
+    $(document).ready(function() {
+      $('#start-time').timepicker({});
+
+      $('#end-time').timepicker({});
+
+      quill = new Quill('#editor-container', {
         modules: {
           toolbar: [
             ['bold', 'italic'],
             ['link']
           ]
         },
-        placeholder: 'Compose an epic...',
+        placeholder: 'Full description with links and actual paragraph breaks. Some people like to read :)',
         theme: 'snow'
       });
 
@@ -189,32 +206,46 @@
       el: '#app',
       data: {
         event:{
-          title: "...",
+          id:"",
+          title: "",
           date:"",
-          start_time:"",
-          end_time:"",
+          time_start:"",
+          time_end:"",
           image:"",
           social_image:"",
+          organizers:"",
+          venue:"",
           brief_description:"",
           description:"",
+          website_link:"",
           eventbright_link:"",
           fb_event_link:"",
-          ticket_link:""
+          ticket_link:"",
+          contact_email:""
         },
-        venues: []
+        selected_venue:{},
+        venues:[]
       },
-      mounted: function(){
-        $('#add-venue').hide();
+      created: function(){
         var _self = this;
+
+        console.log(_self.venues);
 
         axios.get('/venues')
           .then(function (response) {
-            _self.venues = response.data.venue_list;
+            response.data.venue_list.forEach(function(element) {
+                console.log(element)
+                _self.venues.push(element)
+            });
             console.log(_self.venues);
           })
           .catch(function (error) {
             console.log(error);
           });
+      },
+      mounted: function(){
+        $('#add-venue').hide();
+
       },
       methods: {
         AddVenue: function(){
@@ -227,15 +258,56 @@
           $('#add-venue').hide('slow')
         },
         SubmitEvent: function(){
-          console.log(this.event.title);
+
+          this.event.id = uuidv1();
+          this.event.time_start = $("#start-time").val();
+          this.event.time_end = $("#end-time").val();
+
+          this.event.description = quill.root.innerHTML;
+          console.log(this.event.description);
 
           var formData = new FormData();
+          formData.append('id', this.event.id);
           formData.append('title', this.event.title);
+          formData.append('date', this.event.date);
+          formData.append('time_start', this.event.time_start);
+          formData.append('time_end', this.event.time_end);
           formData.append('image', document.getElementById('event-image').files[0]);
+          formData.append('social_image', document.getElementById('event-social-image').files[0]);
+          formData.append('organizers', this.event.organizers);
+          formData.append('brief_description', this.event.brief_description);
+          formData.append('description', this.event.description);
+          formData.append('contact_email', this.event.contact_email);
+
+          if(this.event.ticket_link===""){
+            this.event.ticket_link="none";
+          }
+
+          if(this.event.fb_event_link===""){
+            this.event.fb_event_link="none";
+          }
+
+          if(this.event.eventbright_link===""){
+            this.event.eventbright_link="none";
+          }
+
+          if(this.event.website_link===""){
+            this.event.website_link="none";
+          }
+
+          formData.append('ticket_link', this.event.ticket_link);
+          formData.append('fb_event_link', this.event.fb_event_link);
+          formData.append('eventbright_link', this.event.eventbright_link);
+          formData.append('website_link', this.event.website_link);
+
+          // Post selected Venue
+          formData.append('venues', this.selected_venue.name);
+          formData.append('map_link', this.selected_venue.g_map_link);
 
           axios.post('/event', formData)
             .then(function (response) {
               console.log(response.data);
+              window.alert("Event submitted. Thank you! It should be out of review and on our site within 24 hours. Usually, much faster :)");
 
             })
             .catch(function (error) {

@@ -13,9 +13,13 @@ body {
   margin: 25px;
 }
 
-h1 {
+h1,h2,h3,h4 {
   font-weight: bold;
   color: pink;
+}
+
+h4{
+  margin-top: 30px;
 }
 
 .bold {
@@ -112,6 +116,10 @@ footer > a {
 }
 #editor-container {
   height: 100px;
+}
+
+#full-description-container{
+  margin-bottom: 30px;
 }
 
 /* ------------------------------------- */
