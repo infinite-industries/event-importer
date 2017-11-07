@@ -32,7 +32,25 @@
     <h1>
       Enter Event Info
     </h1>
-    <div class="row">
+
+    <!-- <button class="submitter" @click="ShowImportOptions()">
+      Import from Facebook
+    </button>
+
+    <div id="import-event-options">
+      <p>
+        Step 1:  <button class="submitter" style="background-color:#08c; color:#fff" onclick="myFacebookLogin()">Connect to Facebook</button>
+      </p>
+      <p>Step 2: Paste facebook event ID into the form</p>
+
+        <input id="fb-event-id" type="text" maxlength="100" placeholder="Facebook Event ID">
+        <button class="submitter" onclick="submitMe()">Submit</button>
+        <button @click="CancelImport()">
+          Cancel
+        </button>
+    </div> -->
+
+    <div class="row title-row">
       <div class="col-sm-8">
         <div class="form-group">
           <label for="title">Title: </label>
@@ -72,14 +90,6 @@
     <div class="row">
       <div class="col-sm-8">
         <div class="form-group">
-          <label for="event-social-image">Event Optimized Social Media Image:</label>
-         <input type="file" id="event-social-image" class="form-control" name="event_social_image" v-on:change="RegisterSocialImage()">
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-sm-8">
-        <div class="form-group">
           <label for="organizers">Organizer(s) - Please use commas to separate:</label>
            <input id="organizers" name="organizers" type="text" class="form-control" v-model="event.organizers">
         </div>
@@ -97,17 +107,19 @@
       </div>
       <div class="col-sm-8">
         OR
-         <button class="submitter" @click.stop="AddVenue()">Add a new venue</button>
+         <button class="submitter" @click.stop="ShowVenueOptions()">Add a new venue</button>
       </div>
 
       </div>
 
       <div id="add-venue">
 
-        Venue Name: <input type="text" maxlength="100" placeholder="...">
-        Address: <input type="text" maxlength="100" placeholder="...">
-        City: <input type="text" maxlength="100" placeholder="...">
-        Zip: <input type="text" maxlength="100" placeholder="...">
+        Venue Name: <input type="text" maxlength="100" placeholder="..." v-model="new_venue.name" id="new-venue-name">
+        Address: <input type="text" maxlength="100" placeholder="..." v-model="new_venue.address" id="new-venue-address">
+        City: <input type="text" maxlength="100" v-model="new_venue.city" id="new-venue-city">
+        Zip: <input type="text" maxlength="100" placeholder="no worries if you don't know " v-model="new_venue.zip" id="new-venue-zip">
+        Neighborhood: <input type="text" maxlength="100" placeholder="Optional. If you got a cool neighborhood name, throw it in here." v-model="new_venue.neighborhood" id="new-venue-neighborhood">
+        Map Link: <input type="text" maxlength="100" placeholder="Optional. A prettier interface comming soon-ish..." v-model="new_venue.g_map_link" id="new-venue-g-map-link">
 
         <button class="submitter" @click="SubmitVenue()">
           Add Venue
@@ -172,6 +184,14 @@
             </div>
           </div>
         </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="event-social-image">Event Optimized Social Media Image:</label>
+             <input type="file" id="event-social-image" class="form-control" name="event_social_image" v-on:change="RegisterSocialImage()">
+            </div>
+          </div>
+        </div>
 
       <button class="submitter main-submit-button" type="submit" @click="SubmitEvent()">Submit</button>
 
@@ -214,6 +234,7 @@
           image:"",
           social_image:"",
           organizers:"",
+          event_fee:"",
           venue:"",
           brief_description:"",
           description:"",
@@ -224,7 +245,15 @@
           contact_email:""
         },
         selected_venue:{},
-        venues:[]
+        venues:[],
+        new_venue: {
+          name: "",
+          address:"",
+          city: "Lexington",
+          zip:"",
+          neighborhood:"",
+          g_map_link:""
+        }
       },
       created: function(){
         var _self = this;
@@ -245,17 +274,46 @@
       },
       mounted: function(){
         $('#add-venue').hide();
+        $('#import-event-options').hide();
 
       },
       methods: {
-        AddVenue: function(){
-          $('#add-venue').show('slow')
+        ShowImportOptions: function(){
+          $('#import-event-options').show('slow');
+        },
+        CancelImport: function() {
+          $('#import-event-options').hide('slow');
+        },
+        ShowVenueOptions: function(){
+          $('#add-venue').show('slow');
         },
         SubmitVenue: function(){
+          console.log(this.new_venue);
+          this.venues.push(this.new_venue);
+          this.selected_venue = this.new_venue;
 
+          axios.post('/add-venue', this.new_venue)
+            .then(function (response) {
+              console.log(response.data);
+              window.alert("New venue added to you submission.");
+
+              $('#add-venue').hide('slow');
+              this.new_venue = {
+                name: "",
+                address:"",
+                city: "Lexington",
+                zip:"",
+                neighborhood:"",
+                g_map_link:""
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+              window.alert("Hmmm... something went wrong :( Can you ping the management at info@infinite.industries");
+            });
         },
         CancelSubmitVenue: function(){
-          $('#add-venue').hide('slow')
+          $('#add-venue').hide('slow');
         },
         SubmitEvent: function(){
 
@@ -264,7 +322,7 @@
           this.event.time_end = $("#end-time").val();
 
           this.event.description = quill.root.innerHTML;
-          console.log(this.event.description);
+          console.log(this.event.selected_venue);
 
           var formData = new FormData();
           formData.append('id', this.event.id);
@@ -302,6 +360,7 @@
 
           // Post selected Venue
           formData.append('venues', this.selected_venue.name);
+          formData.append('address', this.selected_venue.address);
           formData.append('map_link', this.selected_venue.g_map_link);
 
           axios.post('/event', formData)

@@ -14,6 +14,8 @@ var uuidv4 = require('uuid/v4');
 var path = require('path');
 var moment = require('moment');
 var sanitizer = require('sanitizer');
+var axios = require('axios');
+var bodyParser = require('body-parser');
 
 dotenv.load(); //get configuration file from .env
 
@@ -22,6 +24,8 @@ var SLACK_WEBHOOK = process.env.SLACK_WEBHOOK;
 var slack = require('slack-notify')(SLACK_WEBHOOK);
 
 var app = express();
+
+app.use(bodyParser.json());
 
 var s3 = new aws.S3({
   region: process.env.AWS_REGION,
@@ -60,26 +64,6 @@ app.get("/", function (request, response) {
   response.sendFile(__dirname + '/views/index.html');
 });
 
-app.post("/inhale-event-internal", function (request, response) {
-  console.log(request.body)
-
-  // axios.post('/event-submit', {input_event: this.event})
-  // .then(function (_response) {
-  //   console.log(_response)
-  //   response.json({"status": "success"})
-  // })
-  // .catch(function (error) {
-  //   console.log(error);
-  //   response.json({"status": "failure"})
-  // });
-});
-
-
-
-
-app.post("/inhale-event-external", function (request, response) {
-  console.log(request.body)
-});
 
 // Create new Event
 app.post("/event", function (request, response) {
@@ -124,6 +108,7 @@ app.post("/event", function (request, response) {
       event.image = "https://s3.us-east-2.amazonaws.com/test-downloader/uploads/"+fields.id[0]+".jpg";
     }
 
+    event.address = fields.address[0];
     event.map_link = fields.map_link[0];
     event.organizers = fields.organizers[0];
     event.venues = fields.venues[0];
@@ -147,6 +132,7 @@ app.post("/event", function (request, response) {
       'image':'${event.image}',
       'social_image':'${event.social_image}',
       'venues':['${event.venues}'],
+      'address': ${event.address},
       'organizers':['${event.organizers}'],
       'map_link':'${event.map_link}',
       'brief_description':'${event.brief_description}',
@@ -160,50 +146,38 @@ app.post("/event", function (request, response) {
     \}`;
 
     slackNotify("Review Me. Copy Me. Paste Me. Deploy Me." + event_payload + "\n Contact email: "+fields.contact_email[0]);
-    // console.log(util.inspect({fields: fields, image: files.image[0], social_image:files.social_image[0]}));
-    //
-    // fs.readFile(files.image[0].path, function (err,data) {
-    //   if (err) {
-    //     return console.log(err);
-    //   }
-    //   var base64file = new Buffer(data,'binary');
-    //   var file_name = uuidv4() + path.extname(files.image[0].originalFilename);
-    //
-    //   uploadFile(file_name, base64file, function(err, data){
-    //     if(err) {
-    //       response.status(500).json({"status":"failure"});
-    //     }
-    //     else{
-    //       // console.log(util.inspect(data));
-    //       response.status(200).json({"status":"success"});
-    //     }
-    //   });
-    })
-    response.json({"status":"success"});
-  })
 
-//   // console.log('POST /event', request.body);
-// })
+    // axios.post('test3.infinite.industries/event-submit', {input_event: this.event})
+    // .then(function (_response) {
+    //   console.log(_response)
+    //   response.json({"status": "success"})
+    // })
+    // .catch(function (error) {
+    //   console.log(error);
+    //   response.json({"status": "failure"})
+    // });
+  })
+    response.json({"status":"success"});
+})
 
 app.get("/venues", function(request, response){
-  //  mongodb.MongoClient.connect(process.env.MONGO_DB_CONNECTION, function(err, db) {
-  //   if(err) throw err;
-  //
-  //   var venues = db.collection('venues');
-  //   venues.find({}).toArray(function(err, docs){
-  //     response.json(docs);
-  //   })
-  //
-  // });
   response.json({"status":"success",
     "venue_list": [
-      {"name":"Institute 193", "g_map_link":"https://goo.gl/maps/PXBsHGVauTB2"},
-      {"name":"The Burl", "g_map_link":"https://goo.gl/maps/MerUrvdgk9u"},
-      {"name":"School of Art Building", "g_map_link":"https://goo.gl/maps/cFTbFbb7TmS2"},
-      {"name":"Cosmic Charlie's", "g_map_link":"https://goo.gl/maps/DRBPSQwjpYu"},
-      {"name":"Best Friend Bar", "g_map_link":"https://goo.gl/maps/1A6vVwVXE432"}
+      {"name":"Institute 193", "address": "193 N Limestone, Lexington, KY 40507", "g_map_link":"https://goo.gl/maps/PXBsHGVauTB2"},
+      {"name":"The Burl", "address": "375 Thompson Rd, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/MerUrvdgk9u"},
+      {"name":"Bolivar Art Gallery - UK School of Art", "address": "236 Bolivar St, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/cFTbFbb7TmS2"},
+      {"name":"Cosmic Charlie's", "address": "723 National Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/DRBPSQwjpYu"},
+      {"name":"Best Friend Bar", "address": "500 Euclid Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/1A6vVwVXE432"}
     ]
   })
+})
+
+
+app.post("/add-venue", function(request, response){
+  var venue_payload = JSON.stringify(request.body);
+  slackNotify("Review Me. Copy Me. Paste Me. Deploy Me." + venue_payload);
+  response.json({"status": "success"});
+
 })
 
 

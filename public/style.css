@@ -18,6 +18,10 @@ h1,h2,h3,h4 {
   color: pink;
 }
 
+h1{
+  margin-bottom: 40px;
+}
+
 h4{
   margin-top: 30px;
 }
@@ -109,6 +113,10 @@ footer > a {
   text-decoration: line-through;
 }
 
+.title-row {
+  margin-top: 30px;
+}
+
 /* ----------- Editor Styles ------------ */
 #content-container {
   margin: 25px auto;
@@ -132,4 +140,8 @@ footer > a {
 
 .main-submit-button{
   margin-top: 30px;
+}
+
+#import-event-options{
+  margin-top: 40px;
 }
