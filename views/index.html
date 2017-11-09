@@ -27,14 +27,36 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId            : '132381870824243',
+        autoLogAppEvents : true,
+        xfbml            : true,
+        version          : 'v2.10'
+      });
+      FB.AppEvents.logPageView();
+
+      console.log("Facebook API initialized")
+
+    };
+
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+  </script>
 
   <div class="container-fluid form-description" id="app">
     <h1>
       Enter Event Info
     </h1>
 
-    <!-- <button class="submitter" @click="ShowImportOptions()">
-      Import from Facebook
+    <button class="submitter" @click="ShowImportOptions()">
+      Import Event Data from Facebook
     </button>
 
     <div id="import-event-options">
@@ -48,7 +70,7 @@
         <button @click="CancelImport()">
           Cancel
         </button>
-    </div> -->
+    </div>
 
     <div class="row title-row">
       <div class="col-sm-8">
@@ -322,10 +344,10 @@
         axios.get('/venues')
           .then(function (response) {
             response.data.venue_list.forEach(function(element) {
-                console.log(element)
+                //console.log(element)
                 _self.venues.push(element)
             });
-            console.log(_self.venues);
+            //console.log(_self.venues);
           })
           .catch(function (error) {
             console.log(error);
@@ -335,8 +357,36 @@
         $('#add-venue').hide();
         $('#import-event-options').hide();
 
+        console.log(decodeURI(window.location.href));
+        var searchParams = new URLSearchParams(decodeURI(window.location.href));
+
+        if(searchParams.has("profile") === true){
+          console.log("prepopulate with profile data");
+
+          var _self = this;
+          axios.get('/profiles.json')
+            .then(function (response) {
+              var profile = searchParams.get("profile");
+              var preload_data = response.data.filter(function(member){ return member.name === profile})[0];
+
+              _self.event.organizers = preload_data.default_organizer;
+              _self.event.selected_venue = _self.venues.filter(function(member){return member.id === preload_data.default_venue_id})[0];
+              _self.event.website_link = preload_data.default_website_link;
+              _self.event.organizer_contact = preload_data.default_organizer_contact;
+              _self.event_management.contact_email = preload_data.default_email;
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }
       },
       methods: {
+        GetFacebookID: function(){
+
+        },
+        ImportEventFacebook: function(){
+
+        },
         ShowImportOptions: function(){
           $('#import-event-options').show('slow');
         },
@@ -448,6 +498,7 @@
           // Post selected Venue
           formData.append('venues', this.selected_venue.name);
           formData.append('address', this.selected_venue.address);
+
           formData.append('map_link', this.selected_venue.g_map_link);
 
           axios.post('/event', formData)

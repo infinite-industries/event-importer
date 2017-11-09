@@ -2,13 +2,14 @@
 // where your node app starts
 
 // init project
+var dotenv = require('dotenv');
+dotenv.load(); //get configuration file from .env
+
 var aws = require('aws-sdk');
 var mongodb = require('mongodb');
 var multiparty = require('multiparty');
-var mailer = require('./services/mailer');
 var express = require('express');
 var util = require('util');
-var dotenv = require('dotenv');
 var fs = require('fs');
 var uuidv4 = require('uuid/v4');
 var path = require('path');
@@ -17,7 +18,7 @@ var sanitizer = require('sanitizer');
 var axios = require('axios');
 var bodyParser = require('body-parser');
 
-dotenv.load(); //get configuration file from .env
+var mailer = require('./services/mailer');
 
 // set channel to post to here
 var SLACK_WEBHOOK = process.env.SLACK_WEBHOOK;
@@ -26,6 +27,7 @@ var slack = require('slack-notify')(SLACK_WEBHOOK);
 var app = express();
 
 app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: false }))
 
 var s3 = new aws.S3({
   region: process.env.AWS_REGION,
@@ -59,8 +61,10 @@ var slackNotify = function(payload){
 
 app.use(express.static('public'));
 
-// http://expressjs.com/en/starter/basic-routing.html
+// http://localhost:4000/?type=venue&profile=VENUE_NAME
 app.get("/", function (request, response) {
+  console.log(request.query.type);
+  console.log(request.query.profile);
   response.sendFile(__dirname + '/views/index.html');
 });
 
@@ -149,11 +153,11 @@ app.post("/event", function (request, response) {
       'tags':['not-implemented-yet']
     \}`;
 
-    slackNotify("Review Me. Copy Me. Paste Me. Deploy Me." + event_payload + "\n Contact: "+fields.organizer_contact[0]);
+    slackNotify("Review Me. Copy Me. Paste Me. Deploy Me." + event_payload + "\n Contact: "+event.organizer_contact);
 
     event_management = fields.event_management[0];
 
-    event_management.email = "shifting.planes@gmail.com";
+    // event_management.email = "shifting.planes@gmail.com";
 
     var email_body_text = `
       <p>
@@ -166,7 +170,7 @@ app.post("/event", function (request, response) {
         <b>Start time(s):</b> ${event.when.split(' at ')[1]}
       </p>
       <p>
-        <b>Location (venue name and address):</b> Bolivar Art Gallery, University of Kentucky, School of Art / Visual Studies, 236 Bolivar Street, Lexington
+        <b>Location (venue name and address):</b> ${event.venues}, ${event.address}
       </p>
       <p>
         <b>Admission fee:</b> ${event.admission_fee}
@@ -175,11 +179,11 @@ app.post("/event", function (request, response) {
         <b>Brief Description:</b> ${fields.description[0]}
       </p>
       <p>
-        <b>Link to more info on the event:</b> http://finearts.uky.edu/savs
+        <b>Link to more info on the event:</b> ${event.website}
       </p>
       <p>
-        <b>Organizer Contact:</b>
-        Becky Alley, Gallery Director, Bolivar Art Gallery, becky.alley@uky.edu, 859-257-8151
+        <b>Organizer Contact:</b> ${event.organizer_contact}
+
       </p>
         <img src = "stufff">`
 
@@ -242,11 +246,11 @@ app.post('/mail-it',function(request,response){
 app.get("/venues", function(request, response){
   response.json({"status":"success",
     "venue_list": [
-      {"name":"Institute 193", "address": "193 N Limestone, Lexington, KY 40507", "g_map_link":"https://goo.gl/maps/PXBsHGVauTB2"},
-      {"name":"The Burl", "address": "375 Thompson Rd, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/MerUrvdgk9u"},
-      {"name":"Bolivar Art Gallery - UK School of Art", "address": "236 Bolivar St, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/cFTbFbb7TmS2"},
-      {"name":"Cosmic Charlie's", "address": "723 National Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/DRBPSQwjpYu"},
-      {"name":"Best Friend Bar", "address": "500 Euclid Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/1A6vVwVXE432"}
+      {"id":"institute_193","name":"Institute 193", "address": "193 N Limestone, Lexington, KY 40507", "g_map_link":"https://goo.gl/maps/PXBsHGVauTB2"},
+      {"id":"the_burl","name":"The Burl", "address": "375 Thompson Rd, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/MerUrvdgk9u"},
+      {"id":"bolivar_art","name":"Bolivar Art Gallery - UK School of Art", "address": "236 Bolivar St, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/cFTbFbb7TmS2"},
+      {"id":"cosmic","name":"Cosmic Charlie's", "address": "723 National Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/DRBPSQwjpYu"},
+      {"id":"best_friend","name":"Best Friend Bar", "address": "500 Euclid Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/1A6vVwVXE432"}
     ]
   })
 })
