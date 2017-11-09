@@ -137,6 +137,14 @@
           </div>
         </div>
       </div>
+      <div class="row">
+        <div class="col-sm-8">
+          <div class="form-group">
+            <label for="event-admission-fee">Admission Fee: </label>
+            <input id="event-admission-fee" class="form-control" name="admission_fee" type="text" v-model="event.admission_fee">
+          </div>
+        </div>
+      </div>
         <p>Full Event Description:</p>
         <div id="full-description-container" style="width:66%">
           <div id="editor-container"></div>
@@ -145,8 +153,8 @@
         <div class="row">
           <div class="col-sm-8">
             <div class="form-group">
-              <label for="contact-email">Contact Email: </label>
-              <input type="text" id="contact-email" class="form-control" v-model="event.contact_email">
+              <label for="organizer-contact">Organizer Contact: </label>
+              <input type="text" id="organizer-contact" placeholder="Name, email, phone, and any other public nfo" class="form-control" v-model="event.organizer_contact">
             </div>
           </div>
         </div>
@@ -193,21 +201,54 @@
           </div>
         </div>
 
-      <button class="submitter main-submit-button" type="submit" @click="SubmitEvent()">Submit</button>
+        <button class="submitter main-submit-button" type="submit" @click="SubmitEvent()">Submit</button>
+
+        <h4>Event Promotion Tools:</h4>
+
+        <div id="summary-to-mail" style="width:80%">
+          <div id="mailer-container"></div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-1">
+            <input type="checkbox" id="event-management-email-me" class="form-control" name="email_me" v-model="event_management.email_me">
+          </div>
+          <div class="col-sm-3">
+            Send a summary to my email for review:
+          </div>
+          <div class="col-sm-4">
+            <input type="text" maxlength="30" id="event-management-contact-email" name="event-management-contact-email" v-model="event_management.contact_email">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-1">
+            <input type="checkbox" id="email-others" class="form-control" name="email_others" v-model="event_management.email_others">
+          </div>
+          <div class="col-sm-3">
+            Send announcement to the following address(es):
+          </div>
+          <div class="col-sm-4">
+            <input type="text" maxlength="30" id="event-management-promo-emails" placeholder="Please separate by commas" name="event-management-promo-emails" v-model="event_management.promo_emails">
+          </div>
+        </div>
+
+        <button class="submitter send-email-button" type="submit" @click="SendEmail()">Send</button>
 
     </div>
 
   <script src="https://unpkg.com/vue"></script>
   <script>
 
-    var quill = {};
+    var quill4form = {};
+    var quill4eventpromo = {};
 
     $(document).ready(function() {
       $('#start-time').timepicker({});
 
       $('#end-time').timepicker({});
 
-      quill = new Quill('#editor-container', {
+      quill4form = new Quill('#editor-container', {
         modules: {
           toolbar: [
             ['bold', 'italic'],
@@ -215,6 +256,17 @@
           ]
         },
         placeholder: 'Full description with links and actual paragraph breaks. Some people like to read :)',
+        theme: 'snow'
+      });
+
+      quill4eventpromo = new Quill('#mailer-container', {
+        modules: {
+          toolbar: [
+            ['bold', 'italic'],
+            ['link']
+          ]
+        },
+        placeholder: 'Will auto-populate after you submit the event.',
         theme: 'snow'
       });
 
@@ -234,7 +286,7 @@
           image:"",
           social_image:"",
           organizers:"",
-          event_fee:"",
+          admission_fee:"none",
           venue:"",
           brief_description:"",
           description:"",
@@ -242,7 +294,7 @@
           eventbright_link:"",
           fb_event_link:"",
           ticket_link:"",
-          contact_email:""
+          organizer_contact:""
         },
         selected_venue:{},
         venues:[],
@@ -253,6 +305,13 @@
           zip:"",
           neighborhood:"",
           g_map_link:""
+        },
+        event_management:{
+          email_me: true,
+          email_others: false,
+          contact_email:"",
+          promo_emails:"",
+          email_body:""
         }
       },
       created: function(){
@@ -315,13 +374,38 @@
         CancelSubmitVenue: function(){
           $('#add-venue').hide('slow');
         },
+        SendEmail: function(){
+          this.event_management.email_body = quill4eventpromo.root.innerHTML;
+
+          if(((this.event_management.contact_email!=='')&&(this.event_management.email_me))||((this.event_management.promo_emails!=='')&&(this.event_management.email_others))){
+            axios.post('/mail-it', this.event_management)
+              .then(function (response) {
+                console.log(response.data);
+                if(response.data.status==='success'){
+                  window.alert("Email successfully sent. Woohoo!");
+                }
+                else{
+                  window.alert("Hmmm... something went wrong :( Check the email address you entered.");
+                }
+
+              })
+              .catch(function (error) {
+                console.log(error);
+                window.alert("Hmmm... something went wrong :( Can you ping the management at info@infinite.industries");
+              });
+          }
+          else{
+            window.alert("Gotta choose someone to email.");
+          }
+
+        },
         SubmitEvent: function(){
 
           this.event.id = uuidv1();
           this.event.time_start = $("#start-time").val();
           this.event.time_end = $("#end-time").val();
 
-          this.event.description = quill.root.innerHTML;
+          this.event.description = quill4form.root.innerHTML;
           console.log(this.event.selected_venue);
 
           var formData = new FormData();
@@ -335,7 +419,10 @@
           formData.append('organizers', this.event.organizers);
           formData.append('brief_description', this.event.brief_description);
           formData.append('description', this.event.description);
-          formData.append('contact_email', this.event.contact_email);
+          formData.append('email', this.event.email);
+          formData.append('event_management',this.event_management);
+          formData.append('admission_fee', this.event.admission_fee);
+          formData.append('organizer_contact', this.event.organizer_contact);
 
           if(this.event.ticket_link===""){
             this.event.ticket_link="none";
@@ -367,7 +454,7 @@
             .then(function (response) {
               console.log(response.data);
               window.alert("Event submitted. Thank you! It should be out of review and on our site within 24 hours. Usually, much faster :)");
-
+              quill4eventpromo.clipboard.dangerouslyPasteHTML(0, response.data.summary);
             })
             .catch(function (error) {
               console.log(error);

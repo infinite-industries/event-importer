@@ -4,8 +4,8 @@
 // init project
 var aws = require('aws-sdk');
 var mongodb = require('mongodb');
-// var multer = require('multer');
 var multiparty = require('multiparty');
+var mailer = require('./services/mailer');
 var express = require('express');
 var util = require('util');
 var dotenv = require('dotenv');
@@ -70,13 +70,14 @@ app.post("/event", function (request, response) {
 
   var form = new multiparty.Form();
 
+  var event = {};
+  var event_management = {};
+
   form.parse(request, function(err, fields, files) {
 
     console.log(util.inspect({fields: fields}))
 
-    /* --------------- Build and Event ------------------- */
-    var event = {};
-
+    /* --------------- Build an Event ------------------- */
     event.id = fields.id[0];
     event.title = fields.title[0];
     event.slug= fields.title[0].toLowerCase().replace(/ /g,"-"); // need more extensive regex for special chars
@@ -113,6 +114,8 @@ app.post("/event", function (request, response) {
     event.organizers = fields.organizers[0];
     event.venues = fields.venues[0];
     event.brief_description = fields.brief_description[0];
+    event.organizer_contact = fields.organizer_contact[0];
+    event.admission_fee = fields.admission_fee[0];
 
     event.description = sanitizer.escape(fields.description[0]);
 
@@ -132,6 +135,7 @@ app.post("/event", function (request, response) {
       'image':'${event.image}',
       'social_image':'${event.social_image}',
       'venues':['${event.venues}'],
+      'admission_fee': ${event.admission_fee}',
       'address': ${event.address},
       'organizers':['${event.organizers}'],
       'map_link':'${event.map_link}',
@@ -145,7 +149,49 @@ app.post("/event", function (request, response) {
       'tags':['not-implemented-yet']
     \}`;
 
-    slackNotify("Review Me. Copy Me. Paste Me. Deploy Me." + event_payload + "\n Contact email: "+fields.contact_email[0]);
+    slackNotify("Review Me. Copy Me. Paste Me. Deploy Me." + event_payload + "\n Contact: "+fields.organizer_contact[0]);
+
+    event_management = fields.event_management[0];
+
+    event_management.email = "shifting.planes@gmail.com";
+
+    var email_body_text = `
+      <p>
+        <b>Title:</b> ${event.title}
+      </p>
+      <p>
+        <b>Date(s):</b> ${event.when.split(' at ')[0]}
+      </p>
+      <p>
+        <b>Start time(s):</b> ${event.when.split(' at ')[1]}
+      </p>
+      <p>
+        <b>Location (venue name and address):</b> Bolivar Art Gallery, University of Kentucky, School of Art / Visual Studies, 236 Bolivar Street, Lexington
+      </p>
+      <p>
+        <b>Admission fee:</b> ${event.admission_fee}
+      </p>
+      <p>
+        <b>Brief Description:</b> ${fields.description[0]}
+      </p>
+      <p>
+        <b>Link to more info on the event:</b> http://finearts.uky.edu/savs
+      </p>
+      <p>
+        <b>Organizer Contact:</b>
+        Becky Alley, Gallery Director, Bolivar Art Gallery, becky.alley@uky.edu, 859-257-8151
+      </p>
+        <img src = "stufff">`
+
+      // var email_template = `<html>
+      //   <head>
+      //     <title>${event.title}</title>
+      //   </head>
+      //   <body>${email_body_text}</body>
+      //   </html>`
+
+      response.json({"status":"success", "summary": email_body_text});
+
 
     // axios.post('test3.infinite.industries/event-submit', {input_event: this.event})
     // .then(function (_response) {
@@ -157,7 +203,40 @@ app.post("/event", function (request, response) {
     //   response.json({"status": "failure"})
     // });
   })
-    response.json({"status":"success"});
+
+})
+
+app.post('/mail-it',function(request,response){
+
+  console.log(request.body);
+  var event_management = request.body;
+
+  if(event_management.email_me === true){
+    var mail_mail = {
+      'subject':'Summary of Your Event Submission',
+      'html':event_management.email_body,
+      // 'text':""
+      'email': event_management.contact_email
+    };
+
+    mailer.sendEmail(mail_mail, function(err, data){
+      if(err) {response.json({"status":"failed", "message": err})}
+
+      response.json({"status":"success"});
+    });
+  }
+
+  // if(event_management.email_others === true){
+  //   var mail_mail = {
+  //     'subject':'Event Announcement',
+  //     'html':event_management.email_body,
+  //     // 'text':""
+  //     'email': event_management.contact_email
+  //   };
+  //
+  //   mailer.sendEmail(mail_mail);
+  // }
+
 })
 
 app.get("/venues", function(request, response){

@@ -130,6 +130,13 @@ footer > a {
   margin-bottom: 30px;
 }
 
+#mailer-container {
+  height: 100px;
+}
+#summary-to-mail{
+  margin-bottom: 30px;
+}
+
 /* ------------------------------------- */
 
 #add-venue{
