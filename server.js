@@ -79,7 +79,7 @@ app.post("/event", function (request, response) {
 
   form.parse(request, function(err, fields, files) {
 
-    console.log(util.inspect({fields: fields}))
+    console.log(util.inspect({fields: fields, files: files.image[0]}))
 
     /* --------------- Build an Event ------------------- */
     event.id = fields.id[0];
@@ -221,7 +221,7 @@ app.post('/mail-it',function(request,response){
       'html':event_management.email_body,
       'reply_to': event_management.contact_email,
       // 'text':""
-      'email': event_management.contact_email
+      'email': [event_management.contact_email]
     };
 
     mailer.sendEmail(mail_mail, function(err, data){
@@ -231,16 +231,42 @@ app.post('/mail-it',function(request,response){
     });
   }
 
-  // if(event_management.email_others === true){
-  //   var mail_mail = {
-  //     'subject':'Event Announcement',
-  //     'html':event_management.email_body,
-  //     // 'text':""
-  //     'email': event_management.contact_email
-  //   };
-  //
-  //   mailer.sendEmail(mail_mail);
-  // }
+  if(event_management.email_others === true){
+    var prep_email_list = event_management.promo_emails.split(",");
+
+    
+    if(prep_email_list.length<1){
+      response.json({"status":"failed", "message": "no email addresses provided"});
+    }
+    else if(prep_email_list.length>20){
+      response.json({"status":"failed", "message": "limit on recipients reached"});
+    }
+    else{
+      
+      var email_list = [];
+      
+      prep_email_list.forEach(function(member){ email_list.push(member.trim())});
+      
+      console.log(email_list);
+      
+      var mail_mail = {
+        'subject':'Event Submission - '+event_management.title,
+        'html':event_management.email_body,
+        'reply_to': event_management.contact_email,
+        // 'text':""
+        'email': email_list
+      };
+
+      mailer.sendEmail(mail_mail, function(err, data){
+        if(err) {response.json({"status":"failed", "message": err})}
+
+        response.json({"status":"success"});
+      });
+      
+      
+    }
+
+  }
 
 })
 

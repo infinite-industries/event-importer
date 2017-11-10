@@ -252,7 +252,7 @@
             Send announcement to the following address(es):
           </div>
           <div class="col-sm-4">
-            <input type="text" maxlength="30" id="event-management-promo-emails" placeholder="Please separate by commas" name="event-management-promo-emails" v-model="event_management.promo_emails">
+            <input type="text" id="event-management-promo-emails" placeholder="Please separate by commas" name="event-management-promo-emails" v-model="event_management.promo_emails">
           </div>
         </div>
 
@@ -334,10 +334,11 @@
           g_map_link:""
         },
         event_management:{
+          title:"",
           email_me: true,
           email_others: false,
           contact_email:"",
-          promo_emails:"",
+          promo_emails:[],
           email_body:""
         }
       },
@@ -455,6 +456,7 @@
         },
         SendEmail: function(){
           this.event_management.email_body = quill4eventpromo.root.innerHTML;
+          this.event_management.title = this.event.title;
 
           if(((this.event_management.contact_email!=='')&&(this.event_management.email_me))||((this.event_management.promo_emails!=='')&&(this.event_management.email_others))){
             axios.post('/mail-it', this.event_management)
@@ -464,7 +466,7 @@
                   window.alert("Email successfully sent. Woohoo!");
                 }
                 else{
-                  window.alert("Hmmm... something went wrong :( Check the email address you entered.");
+                  window.alert("Hmmm... something went wrong :( Check the email address you have entered.");
                 }
 
               })

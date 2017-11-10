@@ -10,7 +10,7 @@ module.exports = {
   sendEmail: function(requested_action, cb){
     var mail_content = {};
     mail_content.from = 'INFINITE.INDUSTRIES <info@infinite.industries>';
-    mail_content.to = [requested_action.email];
+    mail_content.to = requested_action.email;
     mail_content.subject = requested_action.subject;
     // mail_content.text = requested_action.text;
     mail_content.html = requested_action.html;
