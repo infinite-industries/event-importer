@@ -1,133 +1,193 @@
 
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Upload Event Protype</title>
-    <meta name="description" content="A cool thing made with Glitch">
-    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+  <title>Upload Event Protype</title>
+  <meta name="description" content="A cool thing made with Glitch">
+  <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment-with-locales.min.js"></script>
-    
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment-with-locales.min.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
 
 
-    <script src="/uuid-lib-copy.js"></script>
+  <script src="/uuid-lib-copy.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
-    
-    <link href="https://cdn.quilljs.com/1.3.3/quill.snow.css" rel="stylesheet">
-    <script src="//cdn.quilljs.com/1.3.3/quill.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
-    <link rel="stylesheet" href="/style.css">
-  </head>
-  <body>
-    <header>
-      <h1>
-        Enter Event Info
-      </h1>
-    </header>
+  <link href="https://cdn.quilljs.com/1.3.3/quill.snow.css" rel="stylesheet">
+  <script src="//cdn.quilljs.com/1.3.3/quill.js"></script>
 
-    <div class="container-fluid form-description" id="app">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId            : '132381870824243',
+        autoLogAppEvents : true,
+        xfbml            : true,
+        version          : 'v2.10'
+      });
+      FB.AppEvents.logPageView();
+
+      console.log("Facebook API initialized")
+
+    };
+
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <div class="container-fluid form-description" id="app">
+    <h1>
+      Enter Event Info
+    </h1>
+
+    <button class="submitter" @click="ShowImportOptions()">
+      Import Event Data from Facebook
+    </button>
+
+    <div id="import-event-options">
+      <p>
+        Step 1:  <button class="submitter" style="background-color:#08c; color:#fff" onclick="myFacebookLogin()">Connect to Facebook</button>
+      </p>
+      <p>Step 2: Copy and paste full event URL. For example: https://www.facebook.com/events/496353264055850/</p>
+
+        <input id="fb-event-id" type="text" maxlength="100" placeholder="Facebook Event URL">
+
+        <button class="submitter" @click="ImportEventFacebook()">Import</button>
+        <button @click="CancelImport()">
+          Cancel
+        </button>
+    </div>
+
+    <div class="row title-row">
+      <div class="col-sm-8">
+        <div class="form-group">
+          <label for="title">Title: </label>
+          <input type="text" id="title" class="form-control" placeholder="..." v-model="event.title">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-3">
+        <div class="form-group">
+          <label for="event-date">Event Date: </label>
+          <input type="date" id="event-date" class="form-control" placeholder="..." v-model="event.date">
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="form-group">
+          <label for="start-time">Start Time: </label>
+          <input id="start-time" class="form-control">
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="form-group">
+          <label for="end-time">End Time: </label>
+          <input id="end-time" class="form-control">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="form-group">
+          <label for="event-image">Event Image:</label>
+          <input type="file" class="form-control" id="event-image" name="event_image">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="form-group">
+          <label for="organizers">Organizer(s) - Please use commas to separate:</label>
+           <input id="organizers" name="organizers" type="text" class="form-control" v-model="event.organizers">
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-bottom:20px;margin-top:20px;">
+      <div class="col-sm-4">
+        <div class="form-group">
+          <label for="venues">Choose a Venue: </label>
+            <select name="venues" class="form-control" id="venues" v-model="selected_venue">
+              <option v-for="venue in venues" v-bind:value="venue">{{venue.name}}</option>
+            </select>
+        </div>
+      </div>
+      <div class="col-sm-8">
+        OR
+         <button class="submitter" @click.stop="ShowVenueOptions()">Add a new venue</button>
+      </div>
+
+      </div>
+
+      <div id="add-venue">
+
+        Venue Name: <input type="text" maxlength="100" placeholder="..." v-model="new_venue.name" id="new-venue-name">
+        Address: <input type="text" maxlength="100" placeholder="..." v-model="new_venue.address" id="new-venue-address">
+        City: <input type="text" maxlength="100" v-model="new_venue.city" id="new-venue-city">
+        Zip: <input type="text" maxlength="100" placeholder="no worries if you don't know " v-model="new_venue.zip" id="new-venue-zip">
+        Neighborhood: <input type="text" maxlength="100" placeholder="Optional. If you got a cool neighborhood name, throw it in here." v-model="new_venue.neighborhood" id="new-venue-neighborhood">
+        Map Link: <input type="text" maxlength="100" placeholder="Optional. A prettier interface comming soon-ish..." v-model="new_venue.g_map_link" id="new-venue-g-map-link">
+
+        <button class="submitter" @click="SubmitVenue()">
+          Add Venue
+        </button>
+        <button @click="CancelSubmitVenue()">
+          Cancel
+        </button>
+
+      </div>
       <div class="row">
         <div class="col-sm-8">
           <div class="form-group">
-            <label for="title">Title: </label>
-            <input type="text" id="title" class="form-control" placeholder="..." v-model="event.title">
+            <label for="event-brief-description">Brief Description of Your Event: </label>
+            <textarea id="event-brief-description" class="form-control" placeholder="A brief description for short-attention-span humans and webcrawlers" v-model="event.brief_description"></textarea>
           </div>
         </div>
       </div>
+      <div class="row">
+        <div class="col-sm-8">
+          <div class="form-group">
+            <label for="event-admission-fee">Admission Fee: </label>
+            <input id="event-admission-fee" class="form-control" name="admission_fee" type="text" v-model="event.admission_fee">
+          </div>
+        </div>
+      </div>
+        <p>Full Event Description:</p>
+        <div id="full-description-container" style="width:66%">
+          <div id="editor-container"></div>
+        </div>
 
-      <div class="row">
-        <div class="col-sm-4">
-          <div class="form-group">
-            <label for="event-date">Event Date: </label>
-            <input type="date" id="event-date" class="form-control" placeholder="..." v-model="event.date">
-          </div>
-        </div>
-        <div class="col-sm-3">
-          <div class="form-group">
-            <label for="start-time">Start Time: </label>
-            <input type="time" id="start-time" class="form-control" v-model="event.start_time">
-          </div>
-        </div>
-        <div class="col-sm-3">
-          <div class="form-group">
-            <label for="end-time">End Time: </label>
-            <input type="time" id="end-time" class="form-control" v-model="event.end_time">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-8">
-          <div class="form-group">
-            <label for="event-image">Event Image:</label>
-            <input type="file" id="event-image" name="event_image" v-on:change="RegisterImage()">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-8">
-          <div class="form-group">
-            <label for="event-social-image">Event Optimized Social Media Image:</label>
-           <input type="file" id="event-social-image" name="event_social_image" v-on:change="RegisterSocialImage()">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-8">
-          <div class="form-group">
-            <label for="organizers">Organizer(s):</label>
-             <input id="organizers" name="organizers" type="text" v-model="event.organizers">
-          </div>
-        </div>
-      </div>
-        
-      <div class="row">
-        <div class="col-sm-4">
-          <div class="form-group">
-            <label for="venues">Choose a Venue: </label>
-              <select name="venues" id="venues" v-model="event.venues">
-                <option value="institute_193">Institute 193</option>
-                <option value="the_burl">The Burl</option>
-                <option value="savs_building">School of Art Building</option>
-                <option value="cosmic">Cosmic Charlie's</option>
-                <option value="bfb">Best Friend's Bar</option>
-              </select>
-          </div>
-        </div>
-        <div class="col-sm-8">
-          OR 
-           <button class="submitter" @click.stop="AddVenue()">Add a new venue</button>
-        </div>
-    
-        </div>
-      
-        <div id="add-venue">
-      
-          Venue Name: <input type="text" maxlength="100" placeholder="...">
-          Address: <input type="text" maxlength="100" placeholder="...">
-          City: <input type="text" maxlength="100" placeholder="...">
-          Zip: <input type="text" maxlength="100" placeholder="...">
-          
-          <button class="submitter" @click="SubmitVenue()">
-            Add Venue
-          </button>
-          <button @click="CancelSubmitVenue()">
-            Cancel
-          </button>
-        
-        </div>
         <div class="row">
           <div class="col-sm-8">
             <div class="form-group">
-              <label for="event-brief-description">Brief Description of Your Event: </label>
-              <textarea id="event-brief-description" class="form-control" placeholder="A brief description for humans and webcrawlers" v-model="event.brief_description"></textarea>
+              <label for="organizer-contact">Organizer Contact: </label>
+              <input type="text" id="organizer-contact" placeholder="Name, email, phone, and any other public nfo" class="form-control" v-model="event.organizer_contact">
+            </div>
+          </div>
+        </div>
+
+        <h4>Optional:</h4>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="website-link">Event Website Link: </label>
+              <input type="text" id="website-link" class="form-control" v-model="event.website_link">
             </div>
           </div>
         </div>
@@ -154,88 +214,346 @@
               <input type="text" id="eventbright-link" class="form-control" v-model="event.eventbright_link">
             </div>
           </div>
-        </div>  
-      
-        Full Event Description: 
-        <div id="full-description-container">
-          <div id="toolbar-container">
-            <button class="ql-bold" data-toggle="tooltip" data-placement="bottom" title="Bold"></button>
-            <button class="ql-italic" data-toggle="tooltip" data-placement="bottom" title="Add italic text <cmd+i>"></button>
-          </div>
-          <div id="editor-container"></div>
         </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label for="event-social-image">Event Optimized Social Media Image:</label>
+             <input type="file" id="event-social-image" class="form-control" name="event_social_image" v-on:change="RegisterSocialImage()">
+            </div>
+          </div>
+        </div>
+
+        <button class="submitter main-submit-button" type="submit" @click="SubmitEvent()">Submit</button>
+
+        <h4>Event Promotion Tools:</h4>
+
+        <div id="summary-to-mail" style="width:80%">
+          <div id="mailer-container"></div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-1">
+            <input type="checkbox" id="event-management-email-me" class="form-control" name="email_me" v-model="event_management.email_me">
+          </div>
+          <div class="col-sm-3">
+            Send a summary to my email for review:
+          </div>
+          <div class="col-sm-4">
+            <input type="text" maxlength="30" id="event-management-contact-email" name="event-management-contact-email" v-model="event_management.contact_email">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-1">
+            <input type="checkbox" id="email-others" class="form-control" name="email_others" v-model="event_management.email_others">
+          </div>
+          <div class="col-sm-3">
+            Send announcement to the following address(es):
+          </div>
+          <div class="col-sm-4">
+            <input type="text" maxlength="30" id="event-management-promo-emails" placeholder="Please separate by commas" name="event-management-promo-emails" v-model="event_management.promo_emails">
+          </div>
+        </div>
+
+        <button class="submitter send-email-button" type="submit" @click="SendEmail()">Send</button>
+
+    </div>
+
+  <script src="https://unpkg.com/vue"></script>
+  <script>
     
-        <button class="submitter" type="submit" @click="SubmitEvent()">Submit</button>
+    function myFacebookLogin() {
+      FB.login(function(){})
+    }
 
-      </div>
-     
+    var quill4form = {};
+    var quill4eventpromo = {};
 
+    $(document).ready(function() {
+      $('#start-time').timepicker({startTime: '9:00am'});
 
+      $('#end-time').timepicker({startTime: '9:00am'});
 
-    <script src="https://unpkg.com/vue"></script>
-    <script>
-
-      $(document).ready(function() {
-        $('#start-time').timepicker();
-        $('#end-time').timepicker();
-        
-        var quill = new Quill('#editor-container', {
-          modules: {
-            toolbar: '#toolbar-container'
-          },
-          placeholder: 'Compose an epic...',
-          theme: 'snow'
-        });
-        
-      })
-      
-      // ugliness to follow don't judge
-      
-      var app = new Vue({
-        el: '#app',
-        data: {
-          event:{
-            title: "...",
-            date:"",
-            start_time:"",
-            end_time:"",
-            image:"",
-            social_image:"",
-            brief_description:"",
-            description:"",
-            eventbright_link:"",
-            fb_event_link:"",
-            ticket_link:""
-          }
+      quill4form = new Quill('#editor-container', {
+        modules: {
+          toolbar: [
+            ['bold', 'italic'],
+            ['link']
+          ]
         },
-        mounted: function(){
-          $('#add-venue').hide()
+        placeholder: 'Full description with links and actual paragraph breaks. Some people like to read :)',
+        theme: 'snow'
+      });
+
+      quill4eventpromo = new Quill('#mailer-container', {
+        modules: {
+          toolbar: [
+            ['bold', 'italic'],
+            ['link']
+          ]
         },
-        methods: {
-          AddVenue: function(){
-            $('#add-venue').show('slow')
-          },
-          SubmitVenue: function(){
-            
-          },
-          CancelSubmitVenue: function(){
-            $('#add-venue').hide('slow')
-          },
-          SubmitEvent: function(){
-            
-          },
-          RegisterImage:function(){
-            
-          },
-          RegisterSocialImage:function(){
-            
-          }
+        placeholder: 'Will auto-populate after you submit the event.',
+        theme: 'snow'
+      });
+
+    })
+
+    // ugliness to follow don't judge
+
+    var app = new Vue({
+      el: '#app',
+      data: {
+        event:{
+          id:"",
+          title: "",
+          date:"",
+          time_start:"",
+          time_end:"",
+          image:"",
+          social_image:"",
+          organizers:"",
+          admission_fee:"none",
+          venue:"",
+          brief_description:"",
+          description:"",
+          website_link:"",
+          eventbright_link:"",
+          fb_event_link:"",
+          ticket_link:"",
+          organizer_contact:""
+        },
+        selected_venue:{},
+        venues:[],
+        new_venue: {
+          name: "",
+          address:"",
+          city: "Lexington",
+          zip:"",
+          neighborhood:"",
+          g_map_link:""
+        },
+        event_management:{
+          email_me: true,
+          email_others: false,
+          contact_email:"",
+          promo_emails:"",
+          email_body:""
         }
-      })
-      
+      },
+      created: function(){
+        var _self = this;
+
+        console.log(_self.venues);
+
+        axios.get('/venues')
+          .then(function (response) {
+            response.data.venue_list.forEach(function(element) {
+                //console.log(element)
+                _self.venues.push(element)
+            });
+            //console.log(_self.venues);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      },
+      mounted: function(){
+        $('#add-venue').hide();
+        $('#import-event-options').hide();
+
+        console.log(decodeURI(window.location.href));
+        var searchParams = new URLSearchParams(decodeURI(window.location.href));
+
+        if(searchParams.has("profile") === true){
+          console.log("prepopulate with profile data");
+
+          var _self = this;
+          axios.get('/profiles.json')
+            .then(function (response) {
+              var profile = searchParams.get("profile");
+              var preload_data = response.data.filter(function(member){ return member.name === profile})[0];
+
+              _self.event.organizers = preload_data.default_organizer;
+              _self.event.selected_venue = _self.venues.filter(function(member){return member.id === preload_data.default_venue_id})[0];
+              _self.event.website_link = preload_data.default_website_link;
+              _self.event.organizer_contact = preload_data.default_organizer_contact;
+              _self.event_management.contact_email = preload_data.default_email;
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }
+      },
+      methods: {
+        GetFacebookID: function(){
+          var my_id = document.getElementById('fb-event-id').value;
+          if(my_id!==''){
+            return my_id.split('/')[4]
+          }
+        },
+        ImportEventFacebook: function(){
+          _self = this;
+          
+          FB.api(
+            this.GetFacebookID(),
+            function (fb_response) {
+              if (fb_response && !fb_response.error) {
+                _self.event.title = fb_response.name;
+                quill4form.clipboard.dangerouslyPasteHTML(0, fb_response.description.replace(/(?:\r\n|\r|\n)/g, '<br />'));
+                _self.event.fb_event_link = "https://www.facebook.com/events/"+fb_response.id;
+                
+                console.log(fb_response.start_time);
+                
+                $('#start-time').val(moment(fb_response.start_time).format("YYYY-MM-DD kk:mm:ss"));
+                $('#end-time').val(moment(fb_response.end_time).format("YYYY-MM-DD kk:mm:ss"));
+                
+                _self.event.date = moment(fb_response.start_time).format("YYYY-MM-DD");
+              }
+              else{
+                window.alert("Sorry :( Couldn't inhale data from Facebook")
+              }
+            }
+          )
+        },
+        ShowImportOptions: function(){
+          $('#import-event-options').show('slow');
+        },
+        CancelImport: function() {
+          $('#import-event-options').hide('slow');
+        },
+        ShowVenueOptions: function(){
+          $('#add-venue').show('slow');
+        },
+        SubmitVenue: function(){
+          console.log(this.new_venue);
+          this.venues.push(this.new_venue);
+          this.selected_venue = this.new_venue;
+
+          axios.post('/add-venue', this.new_venue)
+            .then(function (response) {
+              console.log(response.data);
+              window.alert("New venue added to you submission.");
+
+              $('#add-venue').hide('slow');
+              this.new_venue = {
+                name: "",
+                address:"",
+                city: "Lexington",
+                zip:"",
+                neighborhood:"",
+                g_map_link:""
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+              window.alert("Hmmm... something went wrong :( Can you ping the management at info@infinite.industries");
+            });
+        },
+        CancelSubmitVenue: function(){
+          $('#add-venue').hide('slow');
+        },
+        SendEmail: function(){
+          this.event_management.email_body = quill4eventpromo.root.innerHTML;
+
+          if(((this.event_management.contact_email!=='')&&(this.event_management.email_me))||((this.event_management.promo_emails!=='')&&(this.event_management.email_others))){
+            axios.post('/mail-it', this.event_management)
+              .then(function (response) {
+                console.log(response.data);
+                if(response.data.status==='success'){
+                  window.alert("Email successfully sent. Woohoo!");
+                }
+                else{
+                  window.alert("Hmmm... something went wrong :( Check the email address you entered.");
+                }
+
+              })
+              .catch(function (error) {
+                console.log(error);
+                window.alert("Hmmm... something went wrong :( Can you ping the management at info@infinite.industries");
+              });
+          }
+          else{
+            window.alert("Gotta choose someone to email.");
+          }
+
+        },
+        SubmitEvent: function(){
+
+          this.event.id = uuidv1();
+          this.event.time_start = $("#start-time").val();
+          this.event.time_end = $("#end-time").val();
+
+          this.event.description = quill4form.root.innerHTML;
+          console.log(this.event.selected_venue);
+
+          var formData = new FormData();
+          formData.append('id', this.event.id);
+          formData.append('title', this.event.title);
+          formData.append('date', this.event.date);
+          formData.append('time_start', this.event.time_start);
+          formData.append('time_end', this.event.time_end);
+          formData.append('image', document.getElementById('event-image').files[0]);
+          formData.append('social_image', document.getElementById('event-social-image').files[0]);
+          formData.append('organizers', this.event.organizers);
+          formData.append('brief_description', this.event.brief_description);
+          formData.append('description', this.event.description);
+          formData.append('email', this.event.email);
+          formData.append('event_management',this.event_management);
+          formData.append('admission_fee', this.event.admission_fee);
+          formData.append('organizer_contact', this.event.organizer_contact);
+
+          if(this.event.ticket_link===""){
+            this.event.ticket_link="none";
+          }
+
+          if(this.event.fb_event_link===""){
+            this.event.fb_event_link="none";
+          }
+
+          if(this.event.eventbright_link===""){
+            this.event.eventbright_link="none";
+          }
+
+          if(this.event.website_link===""){
+            this.event.website_link="none";
+          }
+
+          formData.append('ticket_link', this.event.ticket_link);
+          formData.append('fb_event_link', this.event.fb_event_link);
+          formData.append('eventbright_link', this.event.eventbright_link);
+          formData.append('website_link', this.event.website_link);
+
+          // Post selected Venue
+          formData.append('venues', this.selected_venue.name);
+          formData.append('address', this.selected_venue.address);
+
+          formData.append('map_link', this.selected_venue.g_map_link);
+
+          axios.post('/event', formData)
+            .then(function (response) {
+              console.log(response.data);
+              window.alert("Event submitted. Thank you! It should be out of review and on our site within 24 hours. Usually, much faster :)");
+              quill4eventpromo.clipboard.dangerouslyPasteHTML(0, response.data.summary);
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
 
 
-    </script>
+        },
+        RegisterImage:function(){
 
-  </body>
+        },
+        RegisterSocialImage:function(){
+
+        }
+      }
+    })
+
+
+
+  </script>
+
+</body>
 </html>

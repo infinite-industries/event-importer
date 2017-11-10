@@ -13,9 +13,17 @@ body {
   margin: 25px;
 }
 
-h1 {
+h1,h2,h3,h4 {
   font-weight: bold;
   color: pink;
+}
+
+h1{
+  margin-bottom: 40px;
+}
+
+h4{
+  margin-top: 30px;
 }
 
 .bold {
@@ -105,13 +113,28 @@ footer > a {
   text-decoration: line-through;
 }
 
+.title-row {
+  margin-top: 30px;
+}
+
 /* ----------- Editor Styles ------------ */
 #content-container {
   margin: 25px auto;
   width: 400px;
 }
 #editor-container {
-  height: 100px;
+  height: 250px;
+}
+
+#full-description-container{
+  margin-bottom: 30px;
+}
+
+#mailer-container {
+  height: 250px;
+}
+#summary-to-mail{
+  margin-bottom: 30px;
 }
 
 /* ------------------------------------- */
@@ -119,4 +142,13 @@ footer > a {
 #add-venue{
   margin-top: 30px;
   margin-bottom: 30px;
+
+}
+
+.main-submit-button{
+  margin-top: 30px;
+}
+
+#import-event-options{
+  margin-top: 40px;
 }
