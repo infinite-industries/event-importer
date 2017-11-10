@@ -36,11 +36,11 @@ var s3 = new aws.S3({
 });
 
 
-var uploadFile = function(file_name, file_data, cb) {
+var uploadFile = function(file_name, file_key, file_data, cb) {
   var params = {
     Body: file_data,
     Bucket: process.env.AWS_S3_UPLOADS_BUCKET,
-    Key: "uploads/"+file_name
+    Key: file_key
   };
 
   s3.putObject(params, cb);
@@ -79,7 +79,9 @@ app.post("/event", function (request, response) {
 
   form.parse(request, function(err, fields, files) {
 
-    console.log(util.inspect({fields: fields, files: files.image[0]}))
+    console.log(util.inspect({fields: fields, files: files.social_image}))
+
+
 
     /* --------------- Build an Event ------------------- */
     event.id = fields.id[0];
@@ -102,7 +104,29 @@ app.post("/event", function (request, response) {
     }
     else{
       console.log('Begin uploading social media image');
-      event.social_image = "https://s3.us-east-2.amazonaws.com/test-downloader/uploads/social/"+fields.id[0]+".jpg";
+      event.social_image = "https://s3.us-east-2.amazonaws.com/"+ process.env.AWS_S3_UPLOADS_BUCKET +"/uploads/social/"+fields.id[0]+"_social.jpg";
+
+      fs.readFile(files.social_image[0].path, function (err,data) {
+        if (err) {
+          return console.log(err);
+        }
+        var base64file = new Buffer(data,'binary');
+        //var file_name = uuidv4() + path.extname(files.image[0].originalFilename);
+        var file_name = fields.id[0]+"_social.jpg";
+        var file_key = "uploads/social/"+file_name;
+
+        uploadFile(file_name, file_key, base64file, function(err, data){
+          if(err) {
+            console.log(err);
+            //response.status(500).json({"status":"failure"}); // TODO error handling REALLY!
+          }
+          else{
+            console.log(util.inspect(data));
+            //response.status(200).json({"status":"success"});
+          }
+        });
+      });
+
     }
 
     if(fields.hasOwnProperty('image')){
@@ -159,6 +183,8 @@ app.post("/event", function (request, response) {
 
     // event_management.email = "shifting.planes@gmail.com";
 
+    event.social_image = event.social_image
+
     var email_body_text = `
       <p>
         <b>Title:</b> ${event.title}
@@ -183,8 +209,9 @@ app.post("/event", function (request, response) {
       </p>
       <p>
         <b>Organizer Contact:</b> ${event.organizer_contact}
+
       </p>
-        <img src = "stufff">`
+        <img src = "${event.social_image}">`
 
       // var email_template = `<html>
       //   <head>
@@ -221,7 +248,6 @@ app.post('/mail-it',function(request,response){
       'reply_to': event_management.contact_email,
       // 'text':""
       'email': [event_management.contact_email]
-
     };
 
     mailer.sendEmail(mail_mail, function(err, data){
@@ -234,7 +260,7 @@ app.post('/mail-it',function(request,response){
   if(event_management.email_others === true){
     var prep_email_list = event_management.promo_emails.split(",");
 
-    
+
     if(prep_email_list.length<1){
       response.json({"status":"failed", "message": "no email addresses provided"});
     }
@@ -242,13 +268,13 @@ app.post('/mail-it',function(request,response){
       response.json({"status":"failed", "message": "limit on recipients reached"});
     }
     else{
-      
+
       var email_list = [];
-      
+
       prep_email_list.forEach(function(member){ email_list.push(member.trim())});
-      
+
       console.log(email_list);
-      
+
       var mail_mail = {
         'subject':'Event Submission - '+event_management.title,
         'html':event_management.email_body,
@@ -262,8 +288,8 @@ app.post('/mail-it',function(request,response){
 
         response.json({"status":"success"});
       });
-      
-      
+
+
     }
 
   }

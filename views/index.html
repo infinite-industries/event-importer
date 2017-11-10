@@ -68,7 +68,6 @@
         <input id="fb-event-id" type="text" maxlength="100" placeholder="Facebook Event URL">
 
         <button class="submitter" @click="ImportEventFacebook()">Import</button>
-
         <button @click="CancelImport()">
           Cancel
         </button>
@@ -116,49 +115,6 @@
         <div class="form-group">
           <label for="organizers">Organizer(s) - Please use commas to separate:</label>
            <input id="organizers" name="organizers" type="text" class="form-control" v-model="event.organizers">
-        </div>
-      </div>
-    </div>
-
-    <div class="row" style="margin-bottom:20px;margin-top:20px;">
-      <div class="col-sm-4">
-        <div class="form-group">
-          <label for="venues">Choose a Venue: </label>
-            <select name="venues" class="form-control" id="venues" v-model="selected_venue">
-              <option v-for="venue in venues" v-bind:value="venue">{{venue.name}}</option>
-            </select>
-        </div>
-      </div>
-      <div class="col-sm-8">
-        OR
-         <button class="submitter" @click.stop="ShowVenueOptions()">Add a new venue</button>
-      </div>
-
-      </div>
-
-      <div id="add-venue">
-
-        Venue Name: <input type="text" maxlength="100" placeholder="..." v-model="new_venue.name" id="new-venue-name">
-        Address: <input type="text" maxlength="100" placeholder="..." v-model="new_venue.address" id="new-venue-address">
-        City: <input type="text" maxlength="100" v-model="new_venue.city" id="new-venue-city">
-        Zip: <input type="text" maxlength="100" placeholder="no worries if you don't know " v-model="new_venue.zip" id="new-venue-zip">
-        Neighborhood: <input type="text" maxlength="100" placeholder="Optional. If you got a cool neighborhood name, throw it in here." v-model="new_venue.neighborhood" id="new-venue-neighborhood">
-        Map Link: <input type="text" maxlength="100" placeholder="Optional. A prettier interface comming soon-ish..." v-model="new_venue.g_map_link" id="new-venue-g-map-link">
-
-        <button class="submitter" @click="SubmitVenue()">
-          Add Venue
-        </button>
-        <button @click="CancelSubmitVenue()">
-          Cancel
-        </button>
-
-      </div>
-      <div class="row">
-        <div class="col-sm-8">
-          <div class="form-group">
-            <label for="event-brief-description">Brief Description of Your Event: </label>
-            <textarea id="event-brief-description" class="form-control" placeholder="A brief description for short-attention-span humans and webcrawlers" v-model="event.brief_description"></textarea>
-          </div>
         </div>
       </div>
     </div>
@@ -267,6 +223,7 @@
             </div>
           </div>
         </div>
+
         <button class="submitter main-submit-button" type="submit" @click="SubmitEvent()">Submit</button>
 
         <h4>Event Promotion Tools:</h4>
@@ -305,7 +262,7 @@
 
   <script src="https://unpkg.com/vue"></script>
   <script>
-    
+
     function myFacebookLogin() {
       FB.login(function(){})
     }
@@ -314,7 +271,6 @@
     var quill4eventpromo = {};
 
     $(document).ready(function() {
-
       $('#start-time').timepicker({startTime: '9:00am'});
 
       $('#end-time').timepicker({startTime: '9:00am'});
@@ -325,7 +281,6 @@
             ['bold', 'italic'],
             ['link']
           ]
-
         },
         placeholder: 'Full description with links and actual paragraph breaks. Some people like to read :)',
         theme: 'snow'
@@ -440,7 +395,7 @@
         },
         ImportEventFacebook: function(){
           _self = this;
-          
+
           FB.api(
             this.GetFacebookID(),
             function (fb_response) {
@@ -448,12 +403,12 @@
                 _self.event.title = fb_response.name;
                 quill4form.clipboard.dangerouslyPasteHTML(0, fb_response.description.replace(/(?:\r\n|\r|\n)/g, '<br />'));
                 _self.event.fb_event_link = "https://www.facebook.com/events/"+fb_response.id;
-                
+
                 console.log(fb_response.start_time);
-                
+
                 $('#start-time').val(moment(fb_response.start_time).format("YYYY-MM-DD kk:mm:ss"));
                 $('#end-time').val(moment(fb_response.end_time).format("YYYY-MM-DD kk:mm:ss"));
-                
+
                 _self.event.date = moment(fb_response.start_time).format("YYYY-MM-DD");
               }
               else{
