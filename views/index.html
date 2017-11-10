@@ -63,10 +63,12 @@
       <p>
         Step 1:  <button class="submitter" style="background-color:#08c; color:#fff" onclick="myFacebookLogin()">Connect to Facebook</button>
       </p>
-      <p>Step 2: Paste facebook event ID into the form</p>
+      <p>Step 2: Copy and paste full event URL. For example: https://www.facebook.com/events/496353264055850/</p>
 
-        <input id="fb-event-id" type="text" maxlength="100" placeholder="Facebook Event ID">
-        <button class="submitter" onclick="submitMe()">Submit</button>
+        <input id="fb-event-id" type="text" maxlength="100" placeholder="Facebook Event URL">
+
+        <button class="submitter" @click="ImportEventFacebook()">Import</button>
+
         <button @click="CancelImport()">
           Cancel
         </button>
@@ -114,6 +116,49 @@
         <div class="form-group">
           <label for="organizers">Organizer(s) - Please use commas to separate:</label>
            <input id="organizers" name="organizers" type="text" class="form-control" v-model="event.organizers">
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-bottom:20px;margin-top:20px;">
+      <div class="col-sm-4">
+        <div class="form-group">
+          <label for="venues">Choose a Venue: </label>
+            <select name="venues" class="form-control" id="venues" v-model="selected_venue">
+              <option v-for="venue in venues" v-bind:value="venue">{{venue.name}}</option>
+            </select>
+        </div>
+      </div>
+      <div class="col-sm-8">
+        OR
+         <button class="submitter" @click.stop="ShowVenueOptions()">Add a new venue</button>
+      </div>
+
+      </div>
+
+      <div id="add-venue">
+
+        Venue Name: <input type="text" maxlength="100" placeholder="..." v-model="new_venue.name" id="new-venue-name">
+        Address: <input type="text" maxlength="100" placeholder="..." v-model="new_venue.address" id="new-venue-address">
+        City: <input type="text" maxlength="100" v-model="new_venue.city" id="new-venue-city">
+        Zip: <input type="text" maxlength="100" placeholder="no worries if you don't know " v-model="new_venue.zip" id="new-venue-zip">
+        Neighborhood: <input type="text" maxlength="100" placeholder="Optional. If you got a cool neighborhood name, throw it in here." v-model="new_venue.neighborhood" id="new-venue-neighborhood">
+        Map Link: <input type="text" maxlength="100" placeholder="Optional. A prettier interface comming soon-ish..." v-model="new_venue.g_map_link" id="new-venue-g-map-link">
+
+        <button class="submitter" @click="SubmitVenue()">
+          Add Venue
+        </button>
+        <button @click="CancelSubmitVenue()">
+          Cancel
+        </button>
+
+      </div>
+      <div class="row">
+        <div class="col-sm-8">
+          <div class="form-group">
+            <label for="event-brief-description">Brief Description of Your Event: </label>
+            <textarea id="event-brief-description" class="form-control" placeholder="A brief description for short-attention-span humans and webcrawlers" v-model="event.brief_description"></textarea>
+          </div>
         </div>
       </div>
     </div>
@@ -222,7 +267,6 @@
             </div>
           </div>
         </div>
-
         <button class="submitter main-submit-button" type="submit" @click="SubmitEvent()">Submit</button>
 
         <h4>Event Promotion Tools:</h4>
@@ -251,7 +295,7 @@
             Send announcement to the following address(es):
           </div>
           <div class="col-sm-4">
-            <input type="text" maxlength="30" id="event-management-promo-emails" placeholder="Please separate by commas" name="event-management-promo-emails" v-model="event_management.promo_emails">
+            <input type="text" id="event-management-promo-emails" placeholder="Please separate by commas" name="event-management-promo-emails" v-model="event_management.promo_emails">
           </div>
         </div>
 
@@ -261,14 +305,19 @@
 
   <script src="https://unpkg.com/vue"></script>
   <script>
+    
+    function myFacebookLogin() {
+      FB.login(function(){})
+    }
 
     var quill4form = {};
     var quill4eventpromo = {};
 
     $(document).ready(function() {
-      $('#start-time').timepicker({});
 
-      $('#end-time').timepicker({});
+      $('#start-time').timepicker({startTime: '9:00am'});
+
+      $('#end-time').timepicker({startTime: '9:00am'});
 
       quill4form = new Quill('#editor-container', {
         modules: {
@@ -276,6 +325,7 @@
             ['bold', 'italic'],
             ['link']
           ]
+
         },
         placeholder: 'Full description with links and actual paragraph breaks. Some people like to read :)',
         theme: 'snow'
@@ -329,10 +379,11 @@
           g_map_link:""
         },
         event_management:{
+          title:"",
           email_me: true,
           email_others: false,
           contact_email:"",
-          promo_emails:"",
+          promo_emails:[],
           email_body:""
         }
       },
@@ -382,10 +433,34 @@
       },
       methods: {
         GetFacebookID: function(){
-
+          var my_id = document.getElementById('fb-event-id').value;
+          if(my_id!==''){
+            return my_id.split('/')[4]
+          }
         },
         ImportEventFacebook: function(){
-
+          _self = this;
+          
+          FB.api(
+            this.GetFacebookID(),
+            function (fb_response) {
+              if (fb_response && !fb_response.error) {
+                _self.event.title = fb_response.name;
+                quill4form.clipboard.dangerouslyPasteHTML(0, fb_response.description.replace(/(?:\r\n|\r|\n)/g, '<br />'));
+                _self.event.fb_event_link = "https://www.facebook.com/events/"+fb_response.id;
+                
+                console.log(fb_response.start_time);
+                
+                $('#start-time').val(moment(fb_response.start_time).format("YYYY-MM-DD kk:mm:ss"));
+                $('#end-time').val(moment(fb_response.end_time).format("YYYY-MM-DD kk:mm:ss"));
+                
+                _self.event.date = moment(fb_response.start_time).format("YYYY-MM-DD");
+              }
+              else{
+                window.alert("Sorry :( Couldn't inhale data from Facebook")
+              }
+            }
+          )
         },
         ShowImportOptions: function(){
           $('#import-event-options').show('slow');
@@ -426,6 +501,7 @@
         },
         SendEmail: function(){
           this.event_management.email_body = quill4eventpromo.root.innerHTML;
+          this.event_management.title = this.event.title;
 
           if(((this.event_management.contact_email!=='')&&(this.event_management.email_me))||((this.event_management.promo_emails!=='')&&(this.event_management.email_others))){
             axios.post('/mail-it', this.event_management)
@@ -435,7 +511,7 @@
                   window.alert("Email successfully sent. Woohoo!");
                 }
                 else{
-                  window.alert("Hmmm... something went wrong :( Check the email address you entered.");
+                  window.alert("Hmmm... something went wrong :( Check the email address you have entered.");
                 }
 
               })
