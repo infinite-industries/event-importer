@@ -183,7 +183,6 @@ app.post("/event", function (request, response) {
       </p>
       <p>
         <b>Organizer Contact:</b> ${event.organizer_contact}
-
       </p>
         <img src = "stufff">`
 
@@ -222,6 +221,7 @@ app.post('/mail-it',function(request,response){
       'reply_to': event_management.contact_email,
       // 'text':""
       'email': [event_management.contact_email]
+
     };
 
     mailer.sendEmail(mail_mail, function(err, data){
