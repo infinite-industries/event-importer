@@ -99,42 +99,67 @@ app.post("/event", function (request, response) {
     //event.time_start = moment(event.time_start).format('YYYY-MM-DD kk:mm:ss');
     //moment(fields.time_start[0]).format('YYYY-MM-DD kk:mm:ss');
 
-    if(fields.hasOwnProperty('social_image')){
-      console.log('No social media image');
-    }
-    else{
-      console.log('Begin uploading social media image');
-      event.social_image = "https://s3.us-east-2.amazonaws.com/"+ process.env.AWS_S3_UPLOADS_BUCKET +"/uploads/social/"+fields.id[0]+"_social.jpg";
+    // console.log("FILES OBJ");
+    // console.log(files);
+    // console.log(files.length);
+    // console.log("+++++++++++++++++++");
 
-      fs.readFile(files.social_image[0].path, function (err,data) {
-        if (err) {
-          return console.log(err);
-        }
-        var base64file = new Buffer(data,'binary');
-        //var file_name = uuidv4() + path.extname(files.image[0].originalFilename);
-        var file_name = fields.id[0]+"_social.jpg";
-        var file_key = "uploads/social/"+file_name;
+    event.social_image = "none";
+    event.image = "none";
 
-        uploadFile(file_name, file_key, base64file, function(err, data){
-          if(err) {
-            console.log(err);
-            //response.status(500).json({"status":"failure"}); // TODO error handling REALLY!
+    if(Object.keys(files).length > 0){
+
+      if(files.hasOwnProperty('social_image')){
+
+        console.log('Begin uploading social media image');
+        event.social_image = "https://s3.us-east-2.amazonaws.com/"+ process.env.AWS_S3_UPLOADS_BUCKET +"/uploads/social/"+fields.id[0]+"_social.jpg";
+
+        fs.readFile(files.social_image[0].path, function (err,data) {
+          if (err) {
+            return console.log(err);
           }
-          else{
-            console.log(util.inspect(data));
-            //response.status(200).json({"status":"success"});
-          }
+          var base64file = new Buffer(data,'binary');
+          //var file_name = uuidv4() + path.extname(files.image[0].originalFilename);
+          var file_name = fields.id[0]+"_social.jpg";
+          var file_key = "uploads/social/"+file_name;
+
+          uploadFile(file_name, file_key, base64file, function(err, data){
+            if(err) {
+              console.log(err);
+              //response.status(500).json({"status":"failure"}); // TODO error handling REALLY!
+            }
+            else{
+              console.log(util.inspect(data));
+              //response.status(200).json({"status":"success"});
+            }
+          });
         });
-      });
+      }
 
-    }
+      if(files.hasOwnProperty('image')){
+        console.log('Begin uploading hero image');
+        event.image = "https://s3.us-east-2.amazonaws.com/"+ process.env.AWS_S3_UPLOADS_BUCKET +"/uploads/"+fields.id[0]+".jpg";
+        fs.readFile(files.image[0].path, function (err,data) {
+          if (err) {
+            return console.log(err);
+          }
+          var base64file = new Buffer(data,'binary');
+          //var file_name = uuidv4() + path.extname(files.image[0].originalFilename);
+          var file_name = fields.id[0]+".jpg";
+          var file_key = "uploads/"+file_name;
 
-    if(fields.hasOwnProperty('image')){
-      console.log('No image');
-    }
-    else{
-      console.log('Begin uploading hero image');
-      event.image = "https://s3.us-east-2.amazonaws.com/test-downloader/uploads/"+fields.id[0]+".jpg";
+          uploadFile(file_name, file_key, base64file, function(err, data){
+            if(err) {
+              console.log(err);
+              //response.status(500).json({"status":"failure"}); // TODO error handling REALLY!
+            }
+            else{
+              console.log(util.inspect(data));
+              //response.status(200).json({"status":"success"});
+            }
+          });
+        });
+      }
     }
 
     event.address = fields.address[0];
@@ -211,7 +236,7 @@ app.post("/event", function (request, response) {
         <b>Organizer Contact:</b> ${event.organizer_contact}
 
       </p>
-        <img src = "${event.social_image}">`
+        <img src = "${event.image}">`
 
       // var email_template = `<html>
       //   <head>
