@@ -112,7 +112,7 @@ app.post("/event", function (request, response) {
       if(files.hasOwnProperty('social_image')){
 
         console.log('Begin uploading social media image');
-        event.social_image = "https://s3.us-east-2.amazonaws.com/"+ process.env.AWS_S3_UPLOADS_BUCKET +"/uploads/social/"+fields.id[0]+"_social.jpg";
+        event.social_image = process.env.AWS_SERVER_URL + process.env.AWS_S3_UPLOADS_BUCKET +"/uploads/social/"+fields.id[0]+"_social.jpg";
 
         fs.readFile(files.social_image[0].path, function (err,data) {
           if (err) {
@@ -138,7 +138,7 @@ app.post("/event", function (request, response) {
 
       if(files.hasOwnProperty('image')){
         console.log('Begin uploading hero image');
-        event.image = "https://s3.us-east-2.amazonaws.com/"+ process.env.AWS_S3_UPLOADS_BUCKET +"/uploads/"+fields.id[0]+".jpg";
+        event.image = process.env.AWS_SERVER_URL + process.env.AWS_S3_UPLOADS_BUCKET +"/uploads/"+fields.id[0]+".jpg";
         fs.readFile(files.image[0].path, function (err,data) {
           if (err) {
             return console.log(err);
