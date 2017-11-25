@@ -152,3 +152,7 @@ footer > a {
 #import-event-options{
   margin-top: 40px;
 }
+
+.warn-users{
+  color: pink;
+}
