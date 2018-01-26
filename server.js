@@ -88,13 +88,17 @@ app.post("/event", function (request, response) {
     event.title = fields.title[0];
     event.slug= fields.title[0].toLowerCase().replace(/ /g,"-"); // need more extensive regex for special chars
 
-    var time_string = fields.date[0] + " " + fields.time_start[0];
-    event.time_start = moment(time_string, "YYYY-MM-DD hma").format('YYYY-MM-DD HH:mm:ss');
-    time_string = fields.date[0] + " " + fields.time_end[0];
-    event.time_end = moment(time_string, "YYYY-MM-DD hma").format('YYYY-MM-DD HH:mm:ss');
+    var start_time_string = fields.time_start[0];
+    event.time_start = moment(start_time_string, "YYYY-MM-DD hma").format('YYYY-MM-DD kk:mm:ss');
+    
+    console.log("Start:",start_time_string)
+    
+    var end_time_string = fields.time_end[0];
+    event.time_end = moment(end_time_string, "YYYY-MM-DD hma").format('YYYY-MM-DD kk:mm:ss');
 
+    console.log("End:",end_time_string)
 
-    event.when = moment(fields.date[0]).format('dddd, MMMM Do YYYY') +" at "+ fields.time_start[0] +" - "+ fields.time_end[0] ;
+    event.when = moment(fields.date[0]).format('dddd, MMMM Do, YYYY') +" <br /> "+ moment(fields.time_start[0]).format('h:mma') +" - "+ moment(fields.time_end[0]).format('h:mma') ;
 
     //event.time_start = moment(event.time_start).format('YYYY-MM-DD kk:mm:ss');
     //moment(fields.time_start[0]).format('YYYY-MM-DD kk:mm:ss');
@@ -174,36 +178,53 @@ app.post("/event", function (request, response) {
 
     event.ticket_link = fields.ticket_link[0];
     event.fb_event_link = fields.fb_event_link[0];
-    event.eventbright_link = fields.eventbright_link[0];
+    event.eventbrite_link = fields.eventbrite_link[0];
     event.website = fields.website_link[0];
+    
+    var bitly_query_url ="https://api-ssl.bitly.com/v3/shorten?access_token="+process.env.BITLY_TOKEN+"&longUrl="+ encodeURI(process.env.SITE_URL+"/event/"+event.id)
+  
+    axios.get(bitly_query_url)
+    .then(function (_response) {
+      //console.log(_response.data.data.url);
 
-    var event_payload = `\n\{
-      'id':'${event.id}',
-      'title':'${event.title}',
-      'slug':'${event.slug}',
-      'when':'${event.when}',
-      'time_start':'${event.time_start}',
-      'time_end': '${event.time_end}',
-      'website': '${event.website}',
-      'image':'${event.image}',
-      'social_image':'${event.social_image}',
-      'venues':['${event.venues}'],
-      'admission_fee': ${event.admission_fee}',
-      'address': ${event.address},
-      'organizers':['${event.organizers}'],
-      'map_link':'${event.map_link}',
-      'brief_description':'${event.brief_description}',
-      'description':'${event.description}',
-      'links':['none'],
-      'ticket_link':'${event.ticket_link}',
-      'fb_event_link':'${event.fb_event_link}',
-      'eventbright_link':'${event.eventbright_link}',
-      'bitly_link':'',
-      'tags':['not-implemented-yet']
-    \}`;
+      event.bitly_link = _response.data.data.url;
+      console.log("BITLY:", event.bitly_link)
 
-    slackNotify("Review Me. Copy Me. Paste Me. Deploy Me." + event_payload + "\n Contact: "+event.organizer_contact);
+      var event_payload = `\n\{
+        "id":"${event.id}",
+        "title":"${event.title}",
+        "slug":"${event.slug}",
+        "when":"${event.when}",
+        "time_start":"${event.time_start}",
+        "time_end": "${event.time_end}",
+        "website": "${event.website}",
+        "image":"${event.image}",
+        "social_image":"${event.social_image}",
+        "venues":["${event.venues}"],
+        "admission_fee": "${event.admission_fee}",
+        "address": "${event.address}",
+        "organizers":["${event.organizers}"],
+        "map_link":"${event.map_link}",
+        "brief_description":"${event.brief_description}",
+        "description":"${event.description}",
+        "links":["none"],
+        "ticket_link":"${event.ticket_link}",
+        "fb_event_link":"${event.fb_event_link}",
+        "eventbrite_link":"${event.eventbrite_link}",
+        "bitly_link":"${event.bitly_link}",
+        "tags":["not-yet-implemented"]
+      \}`;
 
+      slackNotify("Review Me. Copy Me. Paste Me. Deploy Me." + event_payload + "\n Contact: "+event.organizer_contact);
+
+    })
+    .catch(function (error) {
+      console.log(error);
+      response.json({"status":"error", "report":"Unable to generate Bitly link"})
+    }); 
+      
+      
+      
     event_management = fields.event_management[0];
 
     // event_management.email = "shifting.planes@gmail.com";
@@ -328,7 +349,17 @@ app.get("/venues", function(request, response){
       {"id":"the_burl","name":"The Burl", "address": "375 Thompson Rd, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/MerUrvdgk9u"},
       {"id":"bolivar_art","name":"Bolivar Art Gallery - UK School of Art", "address": "236 Bolivar St, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/cFTbFbb7TmS2"},
       {"id":"cosmic","name":"Cosmic Charlie's", "address": "723 National Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/DRBPSQwjpYu"},
-      {"id":"best_friend","name":"Best Friend Bar", "address": "500 Euclid Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/1A6vVwVXE432"}
+      {"id":"best_friend","name":"Best Friend Bar", "address": "500 Euclid Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/1A6vVwVXE432"},
+      {"id":"whiskey_bear","name":"Whiskey Bear", "address":"119 Marion, Suite 170, Lexington, Kentucky", "g_map_link":"https://goo.gl/maps/7qSyqTGRyZU2"},
+      {"id":"21c_lex","name":"21C Lexington", "address":"167 W Main St, Lexington, KY 40507","g_map_link":"https://goo.gl/maps/y53p9xLcNcU2"},
+      {"id":"lal", "name":"Lexington Art League", "address":"209 Castlewood Dr, Lexington, Kentucky 40505","g_map_link":"https://goo.gl/maps/PmtR8kAQPRM2"},
+      {"id":"singletary", "name":"Singletary Center for the Arts", "address":"405 Rose St, Lexington, Kentucky 40508", "g_map_link":"https://goo.gl/maps/uLQTd23sBsu"},
+      {"id":"green_lantern", "name":"The Green Lantern Bar", "address":"497 W 3rd St, Lexington, Kentucky 40508", "g_map_link":"https://goo.gl/maps/7qVeS821NtR2"},
+      {"id":"farrish", "name":"Farish Theater", "address":"140 E Main St, Lexington, Kentucky 40507", "g_map_link":"https://goo.gl/maps/ewNPYZsX95L2"},
+      {"id":"brier_books", "name":"Brier Books", "address":"319 S Ashland Ave, Lexington, KY 40502", "g_map_link":"https://goo.gl/maps/ebYWdVHj27H2"},
+      {"id":"lyric_theater", "name":"Lyric Theatre & Cultural Arts Center", "address":"300 E Third St, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/onMCXLbESuq"},
+      {"id":"morland", "name":"Morlan Gallery", "address":"300 N Broadway, Lexington, KY 40508", "g_map_link":"https://goo.gl/maps/sCZ4P8bUkNw"}
+      
     ]
   })
 })
@@ -340,7 +371,6 @@ app.post("/add-venue", function(request, response){
   response.json({"status": "success"});
 
 })
-
 
 
 // listen for requests :)
