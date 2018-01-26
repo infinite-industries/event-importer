@@ -92,6 +92,14 @@ button:active {
   box-shadow: none;
 }
 
+.back-to-infinite{
+  font-size: 16px;
+  border-radius: 3px;
+  background-color: lightblue;
+  border: 1px solid grey;
+  box-shadow: 2px 2px teal;
+  cursor: pointer;
+}
 
 
 

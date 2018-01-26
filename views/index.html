@@ -48,8 +48,18 @@
        fjs.parentNode.insertBefore(js, fjs);
      }(document, 'script', 'facebook-jssdk'));
   </script>
+  
+  <button class="back-to-infinite" style="position:fixed; top: 15px; right: 50px" onclick="app.BackToInfinite()">
+    Back to Infinite Industries Events Portal
+  </button>
+  
 
-  <div class="container-fluid form-description" id="app">
+  <div class="container-fluid form-description" style="margin-top:60px;" id="app">
+     <div style="margin-bottom:30px;">
+      This is an experimental Event Submitter app for the Infinite Industries platform. <br> 
+       If you got questions or feature requests, 
+      please ping us at info[at]infinite.industries
+    </div>
     <h1>
       Enter Event Info
     </h1>
@@ -209,7 +219,7 @@
         <div class="row">
           <div class="col-sm-8">
             <div class="form-group">
-              <label for="eventbright-link">Eventbright Link: </label>
+              <label for="eventbright-link">Eventbrite Link: </label>
               <input type="text" id="eventbright-link" class="form-control" v-model="event.eventbright_link">
             </div>
           </div>
@@ -326,7 +336,7 @@
           brief_description:"",
           description:"",
           website_link:"",
-          eventbright_link:"",
+          eventbrite_link:"",
           fb_event_link:"",
           ticket_link:"",
           organizer_contact:""
@@ -411,6 +421,10 @@
         }
       },
       methods: {
+        BackToInfinite: function(){
+          window.location.assign('https://infinite.industries');
+          console.log("yo!");
+        },
         GetFacebookID: function(){
           var my_id = document.getElementById('fb-event-id').value;
           if(my_id!==''){
@@ -543,8 +557,8 @@
             this.event.fb_event_link="none";
           }
 
-          if(this.event.eventbright_link===""){
-            this.event.eventbright_link="none";
+          if(this.event.eventbrite_link===""){
+            this.event.eventbrite_link="none";
           }
 
           if(this.event.website_link===""){
@@ -553,7 +567,7 @@
 
           formData.append('ticket_link', this.event.ticket_link);
           formData.append('fb_event_link', this.event.fb_event_link);
-          formData.append('eventbright_link', this.event.eventbright_link);
+          formData.append('eventbrite_link', this.event.eventbrite_link);
           formData.append('website_link', this.event.website_link);
 
           // Post selected Venue
